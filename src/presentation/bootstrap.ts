@@ -1,27 +1,27 @@
-import { AnnouncementNamespace } from "@/libs/websocket/namespaces/announcement-namespace";
+// import { AnnouncementNamespace } from "@/libs/websocket/namespaces/announcement-namespace";
 import { APP_API_PREFIX } from "@/config/env";
 import { AppError } from "@/exceptions/app-error";
 import { BackgroundServiceManager } from "@/modules/common/services/background-service-manager";
 import * as bodyParser from "body-parser";
 import cookieParser from 'cookie-parser';
-import container from "@/container";
+// import container from "@/container";
 import cors from "cors";
 import { createServer, Server } from "http";
-import { DashboardTotalNamespace } from "@/libs/websocket/namespaces/dashboard-total-namespace";
+// import { DashboardTotalNamespace } from "@/libs/websocket/namespaces/dashboard-total-namespace";
 import { errorHandler } from "@/exceptions/error-handler";
 import express, { Request, Response, NextFunction, Application } from "express";
 import { HttpCorsOptions } from "@/config/cors";
 import { inject, injectable } from "inversify";
 import { logger } from "@/libs/logger";
-import { Mqtt } from "@/libs/mqtt/mqtt-index";
+// import { Mqtt } from "@/libs/mqtt/mqtt-index";
 import path from "path";
-import { PUBLIC_TIME_NSP } from "@/libs/websocket/namespaces/constants/namespace-constants";
-import { PublicTimeNamespace } from "@/libs/websocket/namespaces/public-time-namespace";
+// import { PUBLIC_TIME_NSP } from "@/libs/websocket/namespaces/constants/namespace-constants";
+// import { PublicTimeNamespace } from "@/libs/websocket/namespaces/public-time-namespace";
 import rateLimit from "express-rate-limit";
 import { Routes } from "@/presentation/routes";
-import { RedisClient } from "@/libs/redis/redis-client";
+// import { RedisClient } from "@/libs/redis/redis-client";
 import { sequelizeMigrate } from "@/modules/common/sequelize";
-import { SocketIO } from "@/libs/websocket";
+// import { SocketIO } from "@/libs/websocket";
 import TYPES from "@/types";
 
 @injectable()
@@ -32,25 +32,25 @@ export class Bootstrap {
   constructor(
     @inject(Routes) private appRoutes: Routes, // inject routes by class
     @inject(TYPES.BackgroundServiceManager) private backgroundServiceManager: BackgroundServiceManager, // inject by symbol
-    @inject(TYPES.SocketIO) private socketIO: SocketIO,
-    @inject(Mqtt) private mqtt: Mqtt,
+    // @inject(TYPES.SocketIO) private socketIO: SocketIO,
+    // @inject(Mqtt) private mqtt: Mqtt,
   ) {
     this.app = express();
     this.httpServer = createServer(this.app);
-    this.initializeRedis();     // initialize redis
+    // this.initializeRedis();     // initialize redis
     this.middleware();          // apply middleware
     this.setRoutes();           // set routes
     this.middlewareError();     // error handler
     this.initializeDatabase();
     this.initializeBackgroundServices();  // initialize background services
-    this.initializeSocketIO();  // initialize socket
-    this.initializeMqtt();      // initialize mqtt
+    // this.initializeSocketIO();  // initialize socket
+    // this.initializeMqtt();      // initialize mqtt
   }
 
-  private initializeRedis(): void {
-    RedisClient.getInstance();
-    console.log('Redis client initialized');
-  }
+  // private initializeRedis(): void {
+  //   RedisClient.getInstance();
+  //   console.log('Redis client initialized');
+  // }
 
   private middleware(): void {
     const apiRateLimiter = rateLimit({
@@ -163,26 +163,26 @@ export class Bootstrap {
     this.backgroundServiceManager.startServices();
   }
 
-  public initializeSocketIO(): void {
-    this.socketIO.initialize(this.httpServer);
+  // public initializeSocketIO(): void {
+  //   this.socketIO.initialize(this.httpServer);
 
-    // specify public namespace
-    this.socketIO.setPublicNamespaces([
-      PUBLIC_TIME_NSP,
-    ])
+  //   // specify public namespace
+  //   this.socketIO.setPublicNamespaces([
+  //     PUBLIC_TIME_NSP,
+  //   ])
 
-    const socketNamespaces = [
-      container.get<DashboardTotalNamespace>(TYPES.DashboardTotalNamespace),
-      container.get<AnnouncementNamespace>(TYPES.AnnouncementNamespace),
-      new PublicTimeNamespace(),
-    ];
+  //   const socketNamespaces = [
+  //     container.get<DashboardTotalNamespace>(TYPES.DashboardTotalNamespace),
+  //     container.get<AnnouncementNamespace>(TYPES.AnnouncementNamespace),
+  //     new PublicTimeNamespace(),
+  //   ];
 
-    this.socketIO.initializeNamespaces(socketNamespaces);
-    console.log("Socket.IO initialized with namespaces.");
-  }
+  //   this.socketIO.initializeNamespaces(socketNamespaces);
+  //   console.log("Socket.IO initialized with namespaces.");
+  // }
 
-  private initializeMqtt(): void {
-    this.mqtt.connect();
-    this.mqtt.setSubscriber();
-  }
+  // private initializeMqtt(): void {
+  //   this.mqtt.connect();
+  //   this.mqtt.setSubscriber();
+  // }
 }

@@ -23,9 +23,9 @@ export async function sequelizeMigrate(): Promise<void> {
     ]);
 
     // Sync dependent tables sequentially
-    await Role.sync({ alter: false });
-    await User.sync({ alter: false });
-    await RefreshToken.sync({ alter: false });
+    await Role.sync({ alter: true });
+    await User.sync({ alter: true });
+    await RefreshToken.sync({ alter: true });
     await Menu.sync({ alter: false });
     await Permission.sync({ alter: false });
     await MenuPermission.sync({ alter: false });

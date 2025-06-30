@@ -1,13 +1,8 @@
 version: '3.5'
 
 services:
-  redis:
-    container_name: redis
-    image: redis:6
-    ports:
-      - "6379:6379"
   postgres17:
-    container_name: postgres17
+    container_name: postgres17_asset_management_sys
     image: postgres:17
     ports:
       - "5433:5432"
@@ -16,8 +11,8 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     volumes:
-      - postgres17_data:/var/lib/postgresql/data
+      - postgres17_asset_management_sys_data:/var/lib/postgresql/data
     command: /bin/bash -c "mkdir -p /db-backup && docker-entrypoint.sh postgres" 
 
 volumes:
-  postgres17_data:
+  postgres17_asset_management_sys_data:
