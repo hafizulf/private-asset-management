@@ -9,6 +9,10 @@ import { Permission } from "@/modules/access-managements/permissions/permission-
 import { MenuPermission } from "@/modules/access-managements/menu-permissions/menu-permission-model";
 import { RoleMenuPermission } from "../access-managements/role-menu-permissions/role-menu-permission-model";
 import { Origin } from "../origins/origin-model";
+import { Commodity } from "../commodity/commodity-model";
+import { BuyHistory } from "../buy-history/buy-history-model";
+import { StockAsset } from "../stock-assets/stock-asset-model";
+import { SellHistory } from "../sell-history/sell-history-model";
 
 export async function sequelizeMigrate(): Promise<void> {
   try {
@@ -16,20 +20,26 @@ export async function sequelizeMigrate(): Promise<void> {
 
     // Sync independent tables concurrently
     await Promise.all([
-      DashboardTotal.sync({ alter: false }),
-      Announcement.sync({ alter: false }),
-      UserLogs.sync({ alter: false }),
-      Origin.sync({ alter: false }),
+      // DashboardTotal.sync({ alter: false }),
+      // Announcement.sync({ alter: false }),
+      // UserLogs.sync({ alter: false }),
+      // Origin.sync({ alter: false }),
     ]);
 
     // Sync dependent tables sequentially
-    await Role.sync({ alter: true });
-    await User.sync({ alter: true });
-    await RefreshToken.sync({ alter: true });
-    await Menu.sync({ alter: false });
-    await Permission.sync({ alter: false });
-    await MenuPermission.sync({ alter: false });
-    await RoleMenuPermission.sync({ alter: false });
+    await Role.sync({ alter: false });
+    await User.sync({ alter: false });
+    await RefreshToken.sync({ alter: false });
+    // await Menu.sync({ alter: false });
+    // await Permission.sync({ alter: false });
+    // await MenuPermission.sync({ alter: false });
+    // await RoleMenuPermission.sync({ alter: false });
+
+    // assets
+    await Commodity.sync({ alter: false });
+    await BuyHistory.sync({ alter: false });
+    await StockAsset.sync({ alter: false });
+    await SellHistory.sync({ alter: false });
 
     console.log("Database migrations completed.");
   } catch (error) {
@@ -45,17 +55,26 @@ User.belongsTo(Role, { foreignKey: "roleId" });
 User.hasMany(RefreshToken, { foreignKey: "userId" });
 RefreshToken.belongsTo(User, { foreignKey: "userId" });
 
-Menu.hasMany(MenuPermission, { foreignKey: "menuId" });
-MenuPermission.belongsTo(Menu, { foreignKey: "menuId" });
-Permission.hasMany(MenuPermission, { foreignKey: "permissionId" });
-MenuPermission.belongsTo(Permission, { foreignKey: "permissionId" });
+// Menu.hasMany(MenuPermission, { foreignKey: "menuId" });
+// MenuPermission.belongsTo(Menu, { foreignKey: "menuId" });
+// Permission.hasMany(MenuPermission, { foreignKey: "permissionId" });
+// MenuPermission.belongsTo(Permission, { foreignKey: "permissionId" });
 
-Role.hasMany(RoleMenuPermission, { foreignKey: "roleId" });
-RoleMenuPermission.belongsTo(Role, { foreignKey: "roleId" });
-Menu.hasMany(RoleMenuPermission, { foreignKey: "menuId" });
-RoleMenuPermission.belongsTo(Menu, { foreignKey: "menuId" });
-Permission.hasMany(RoleMenuPermission, { foreignKey: "permissionId" });
-RoleMenuPermission.belongsTo(Permission, { foreignKey: "permissionId" });
+// Role.hasMany(RoleMenuPermission, { foreignKey: "roleId" });
+// RoleMenuPermission.belongsTo(Role, { foreignKey: "roleId" });
+// Menu.hasMany(RoleMenuPermission, { foreignKey: "menuId" });
+// RoleMenuPermission.belongsTo(Menu, { foreignKey: "menuId" });
+// Permission.hasMany(RoleMenuPermission, { foreignKey: "permissionId" });
+// RoleMenuPermission.belongsTo(Permission, { foreignKey: "permissionId" });
+
+BuyHistory.hasMany(Commodity, { foreignKey: "id" });
+Commodity.belongsTo(BuyHistory, { foreignKey: "id" });
+
+StockAsset.hasMany(Commodity, { foreignKey: "id" });
+Commodity.belongsTo(StockAsset, { foreignKey: "id" });
+
+SellHistory.hasMany(Commodity, { foreignKey: "id" });
+Commodity.belongsTo(SellHistory, { foreignKey: "id" });
 
 export {
   Role,
@@ -69,4 +88,6 @@ export {
   MenuPermission,
   RoleMenuPermission,
   Origin,
+  Commodity,
+  BuyHistory,
 };
