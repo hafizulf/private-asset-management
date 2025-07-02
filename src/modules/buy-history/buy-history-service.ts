@@ -97,7 +97,9 @@ export class BuyHistoryService {
       buyHistories: [],
     }
 
-    data.sort((a, b) => b.date.getTime() - a.date.getTime()); // sort by date desc
+    // if a > b, return -1 will sort a before b, if a < b, return 1 will sort a after b
+    data.sort((a, b) => (a.date > b.date ? -1 : 1)); 
+    
     data.forEach((el) => {
       response.buyHistories.push({
         ...el,

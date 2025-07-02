@@ -26,7 +26,6 @@ export class BuyHistoryController {
   }
 
   public findAll = async (req: Request, res: Response): Promise<Response> => {
-    console.log("find all");
     const validatedReq = validateSchema(paginatedBuyHistorySchema, req.query);
     const [data, pagination] = await this._service.findAll(validatedReq);
 
@@ -38,7 +37,6 @@ export class BuyHistoryController {
   }
 
   public findOne = async (req: Request, res: Response): Promise<Response> => {
-    console.log("find One");
     const validatedReq = validateSchema(findOneBuyHistorySchema, req.params);
     const data = await this._service.findOne(validatedReq.id);
 
@@ -50,7 +48,6 @@ export class BuyHistoryController {
   }
 
   public findHistoryByCommodity = async (req: Request, res: Response): Promise<Response> => {
-    console.log("masuk");
     const validatedReq = validateSchema(findHistoryByCommoditySchema, req.params);
     const data = await this._service.findByCommodity(validatedReq.commodityId);
 
