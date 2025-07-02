@@ -19,6 +19,8 @@ import { PermissionRoutes } from "@/modules/access-managements/permissions/permi
 import { MenuPermissionRoutes } from "@/modules/access-managements/menu-permissions/menu-permission-routes";
 import { RoleMenuPermissionRoutes } from "@/modules/access-managements/role-menu-permissions/role-menu-permission-routes";
 import { OriginRoutes } from "@/modules/origins/origin-routes";
+import { BuyHistoryRoutes } from "@/modules/buy-history/buy-history-routes";
+import { CommodityRoutes } from "@/modules/commodity/commodity-routes";
 
 // Import Middlewares
 import { AuthMiddleware } from "@/presentation/middlewares/auth-middleware";
@@ -33,6 +35,8 @@ import { PermissionController } from "@/modules/access-managements/permissions/p
 import { MenuPermissionController } from "@/modules/access-managements/menu-permissions/menu-permission-controller";
 import { RoleMenuPermissionController } from "@/modules/access-managements/role-menu-permissions/role-menu-permission-controller";
 import { OriginController } from "@/modules/origins/origin-controller";
+import { BuyHistoryController } from "@/modules/buy-history/buy-history-controller";
+import { CommodityController } from "@/modules/commodity/commodity-controller";
 
 // Import Services
 import { BackgroundServiceManager } from "./modules/common/services/background-service-manager";
@@ -50,6 +54,8 @@ import { PermissionService } from "@/modules/access-managements/permissions/perm
 import { MenuPermissionService } from "@/modules/access-managements/menu-permissions/menu-permission-service";
 import { RoleMenuPermissionService } from "@/modules/access-managements/role-menu-permissions/role-menu-permission-service";
 import { OriginService } from "@/modules/origins/origin-service";
+import { BuyHistoryService } from "@/modules/buy-history/buy-history-service";
+import { CommodityService } from "@/modules/commodity/commodity-service";
 
 // Import Interface Repository
 import { IRoleRepository } from "@/modules/roles/role-repository-interface";
@@ -63,6 +69,8 @@ import { IPermissionRepository } from "@/modules/access-managements/permissions/
 import { IMenuPermissionRepository } from "@/modules/access-managements/menu-permissions/menu-permission-repository-interface";
 import { IRoleMenuPermissionRepository } from "@/modules/access-managements/role-menu-permissions/role-menu-permission-repository-interface";
 import { IOriginRepository } from "@/modules/origins/origin-repository-interface";
+import { IBuyHistoryRepository } from "@/modules/buy-history/buy-history-repository-interface";
+import { ICommodityRepository } from "@/modules/commodity/commodity-repository-interface";
 
 // Import Repository
 import { RoleRepository } from "@/modules/roles/role-repository";
@@ -76,6 +84,8 @@ import { PermissionRepository } from "@/modules/access-managements/permissions/p
 import { MenuPermissionRepository } from "@/modules/access-managements/menu-permissions/menu-permission-repository";
 import { RoleMenuPermissionRepository } from "@/modules/access-managements/role-menu-permissions/role-menu-permission-repository";
 import { OriginRepository } from "@/modules/origins/origin-repository";
+import { BuyHistoryRepository } from "@/modules/buy-history/buy-history-repository";
+import { CommodityRepository } from "@/modules/commodity/commodity-repository";
 
 // Import Socket Namespace
 import { NamespaceConfigService } from "@/libs/websocket/namespaces/namespace-config-service";
@@ -110,6 +120,8 @@ container.bind<PermissionRoutes>(PermissionRoutes).toSelf().inSingletonScope();
 container.bind<MenuPermissionRoutes>(MenuPermissionRoutes).toSelf().inSingletonScope();
 container.bind<RoleMenuPermissionRoutes>(RoleMenuPermissionRoutes).toSelf().inSingletonScope();
 container.bind<OriginRoutes>(OriginRoutes).toSelf().inSingletonScope();
+container.bind<BuyHistoryRoutes>(BuyHistoryRoutes).toSelf().inSingletonScope();
+container.bind<CommodityRoutes>(CommodityRoutes).toSelf().inSingletonScope();
 
 // Middleware
 container.bind(AuthMiddleware).toSelf();
@@ -124,6 +136,8 @@ container.bind(PermissionController).toSelf();
 container.bind(MenuPermissionController).toSelf();
 container.bind(RoleMenuPermissionController).toSelf();
 container.bind(OriginController).toSelf();
+container.bind(BuyHistoryController).toSelf();
+container.bind(CommodityController).toSelf();
 
 // Services
 container.bind<BackgroundServiceManager>(TYPES.BackgroundServiceManager).to(BackgroundServiceManager);
@@ -141,6 +155,8 @@ container.bind(TYPES.RoleMenuPermissionService).to(RoleMenuPermissionService);
 container.bind(TYPES.ManageDbTransactionService).to(ManageDbTransactionService);
 container.bind(TYPES.MqttService).to(MqttService).inSingletonScope();
 container.bind(TYPES.OriginService).to(OriginService);
+container.bind(TYPES.BuyHistoryService).to(BuyHistoryService);
+container.bind(TYPES.CommodityService).to(CommodityService);
 
 // Repository
 container
@@ -176,6 +192,12 @@ container
 container
   .bind<IOriginRepository>(TYPES.IOriginRepository)
   .to(OriginRepository);
+container
+  .bind<IBuyHistoryRepository>(TYPES.IBuyHistoryRepository)
+  .to(BuyHistoryRepository);
+container
+  .bind<ICommodityRepository>(TYPES.ICommodityRepository)
+  .to(CommodityRepository);
 
 // Socket Namespace
 container

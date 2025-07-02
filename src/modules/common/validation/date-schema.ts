@@ -7,13 +7,18 @@ dayjs.extend(customParseFormat);
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-const format = "DD/MM/YYYY HH:mm:ss";
+const format = "DD/MM/YYYY";
 
 export const validateDateString = (dateString: string): Date => {
-  // Parse the date string as Asia/Jakarta time (interprets input as local time, then converts to UTC internally)
-  const parsedDate = dayjs.tz(dateString, format, "Asia/Jakarta");
-  if (!parsedDate.isValid()) {
+  // First, strictly parse the string
+  const parsedLocal = dayjs(dateString, format, true); // ✅ strict = true
+
+  if (!parsedLocal.isValid()) {
     throw new Error(`Invalid date format: ${dateString}. Expected format: ${format}`);
   }
-  return parsedDate.toDate();
+
+  // Then apply the timezone
+  const zoned = parsedLocal.tz("Asia/Jakarta"); // convert to Asia/Jakarta time zone
+
+  return zoned.toDate(); // return as JS Date object
 };

@@ -67,14 +67,14 @@ RefreshToken.belongsTo(User, { foreignKey: "userId" });
 // Permission.hasMany(RoleMenuPermission, { foreignKey: "permissionId" });
 // RoleMenuPermission.belongsTo(Permission, { foreignKey: "permissionId" });
 
-BuyHistory.hasMany(Commodity, { foreignKey: "id" });
-Commodity.belongsTo(BuyHistory, { foreignKey: "id" });
+BuyHistory.belongsTo(Commodity, { foreignKey: "commodityId" });
+Commodity.hasMany(BuyHistory, { foreignKey: "commodityId" });
 
-StockAsset.hasMany(Commodity, { foreignKey: "id" });
-Commodity.belongsTo(StockAsset, { foreignKey: "id" });
+StockAsset.belongsTo(Commodity, { foreignKey: "commodityId" });
+Commodity.hasMany(StockAsset, { foreignKey: "commodityId" });
 
-SellHistory.hasMany(Commodity, { foreignKey: "id" });
-Commodity.belongsTo(SellHistory, { foreignKey: "id" });
+SellHistory.belongsTo(Commodity, { foreignKey: "commodityId" });
+Commodity.hasMany(SellHistory, { foreignKey: "commodityId" });
 
 export {
   Role,
@@ -90,4 +90,6 @@ export {
   Origin,
   Commodity,
   BuyHistory,
+  StockAsset,
+  SellHistory
 };

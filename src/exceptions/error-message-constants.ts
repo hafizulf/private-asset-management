@@ -43,3 +43,13 @@ export enum OriginErrMessage {
   NOT_FOUND = 'Origin not found',
   ALREADY_EXISTS = 'Origin already exists',
 }
+
+export enum CommodityErrMessage {
+  NOT_FOUND = 'Commodity not found',
+  ALREADY_EXISTS = 'Commodity name already exists',
+}
+
+export enum BuyHistoryErrMessage {
+  NOT_FOUND = 'Buy history not found',
+  ALREADY_EXISTS = 'Buy history already exists',
+}

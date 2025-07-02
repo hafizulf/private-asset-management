@@ -9,11 +9,15 @@ import { RoleRoutes } from "@/modules/roles/role-routes";
 import { UserRoutes } from "@/modules/users/user-routes";
 import { WebAuthRoutes } from "@/modules/authentications/web-auth-routes";
 import { OriginRoutes } from "@/modules/origins/origin-routes";
+import { BuyHistoryRoutes } from "@/modules/buy-history/buy-history-routes";
+import { CommodityRoutes } from "@/modules/commodity/commodity-routes";
 
 @injectable()
 export class Routes {
   constructor(
     private announcementRoutes: AnnouncementRoutes,
+    private buyHistoryRoutes: BuyHistoryRoutes,
+    private commodityRoutes: CommodityRoutes,
     private menuPermissionRoutes: MenuPermissionRoutes,
     private menuRoutes: MenuRoutes,
     private originRoutes: OriginRoutes,
@@ -26,6 +30,8 @@ export class Routes {
 
   public setRoutes(router: Router) {
     this.announcementRoutes.setRoutes(router);
+    this.buyHistoryRoutes.setRoutes(router);
+    this.commodityRoutes.setRoutes(router);
     this.menuPermissionRoutes.setRoutes(router);
     this.menuRoutes.setRoutes(router);
     this.originRoutes.setRoutes(router);

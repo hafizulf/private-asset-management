@@ -8,7 +8,7 @@ export class BuyHistory extends Model <
   InferAttributes<BuyHistory>,
   InferCreationAttributes<BuyHistory>
 > implements IBuyHistory {
-  declare id: string;
+  declare id: CreationOptional<string>;
   declare commodityId: string;
   declare commodity?: NonAttribute<Commodity>;
   declare date: Date;

@@ -10,6 +10,8 @@ const TYPES = {
   // Service
   AnnouncementService: Symbol.for("AnnouncementService"),
   BackgroundServiceManager: Symbol.for("BackgroundServiceManager"),
+  BuyHistoryService: Symbol.for("BuyHistoryService"),
+  CommodityService: Symbol.for("CommodityService"),
   DashboardTotalService: Symbol.for("DashboardTotalService"),
   ManageDbTransactionService: Symbol.for("ManageDbTransactionService"),
   MenuPermissionService: Symbol.for("MenuPermissionService"),
@@ -26,6 +28,8 @@ const TYPES = {
 
   // Repository Interface
   IAnnouncementRepository: Symbol.for("IAnnouncementRepository"),
+  IBuyHistoryRepository: Symbol.for("IBuyHistoryRepository"),
+  ICommodityRepository: Symbol.for("ICommodityRepository"),
   IDashboardTotalRepository: Symbol.for("IDashboardTotalRepository"),
   IMenuPermissionRepository: Symbol.for("IMenuPermissionRepository"),
   IMenuRepository: Symbol.for("IMenuRepository"),

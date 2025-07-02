@@ -4,6 +4,7 @@ import { DefaultEntityBehaviour } from "../common/dto/common-dto";
 export interface ICommodity {
   id?: string;
   name: string;
+  unit: string;
   isActive: boolean;
   createdAt?: Date;
   updatedAt?: Date;
@@ -27,6 +28,7 @@ export class CommodityDomain
     return {
       id: this.id,
       name: this.name,
+      unit: this.unit,
       isActive: this.isActive,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
@@ -40,6 +42,10 @@ export class CommodityDomain
 
   get name(): string {
     return this.props.name;
+  }
+
+  get unit(): string {
+    return this.props.unit;
   }
 
   get isActive(): boolean {

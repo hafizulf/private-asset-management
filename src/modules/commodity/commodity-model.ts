@@ -7,8 +7,9 @@ export class Commodity extends Model <
   InferAttributes<Commodity>,
   InferCreationAttributes<Commodity>
 > implements ICommodity {
-  declare id: string;
+  declare id: CreationOptional<string>;
   declare name: string;
+  declare unit: string;
   declare isActive: boolean;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
@@ -22,6 +23,10 @@ Commodity.init({
     defaultValue: () => uuidv7(),
   },
   name: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  unit: {
     type: DataTypes.STRING,
     allowNull: false,
   },
