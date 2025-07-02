@@ -35,7 +35,7 @@ StockAsset.init({
     }
   },
   qty: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.FLOAT,
     allowNull: false,
   },
   createdAt: DataTypes.DATE,

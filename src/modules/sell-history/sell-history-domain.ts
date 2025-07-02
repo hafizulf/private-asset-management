@@ -7,6 +7,7 @@ export interface ISellHistory {
   date: Date;
   qty: number;
   totalPrice: number;
+  memo?: string;
   createdAt?: Date;
   updatedAt?: Date;
   deletedAt?: Date;
@@ -32,6 +33,7 @@ export class SellHistory
       date: this.date,
       qty: this.qty,
       totalPrice: this.totalPrice,
+      memo: this.memo,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
       deletedAt: this.deletedAt
@@ -56,6 +58,10 @@ export class SellHistory
 
   get totalPrice(): number {
     return this.props.totalPrice;
+  }
+
+  get memo(): string | undefined {
+    return this.props.memo;
   }
 
   get createdAt(): Date | undefined {

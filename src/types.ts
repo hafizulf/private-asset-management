@@ -21,6 +21,7 @@ const TYPES = {
   PermissionService: Symbol.for("PermissionService"),
   RefreshTokenService: Symbol.for("RefreshTokenService"),
   RoleMenuPermissionService: Symbol.for("RoleMenuPermissionService"),
+  StockAssetService: Symbol.for("StockAssetService"),
   RoleService: Symbol.for("RoleService"),
   UserService: Symbol.for("UserService"),
   UserLogsService: Symbol.for("UserLogsService"),
@@ -38,6 +39,7 @@ const TYPES = {
   IRefreshTokenRepository: Symbol.for("IRefreshTokenRepository"),
   IRoleMenuPermissionRepository: Symbol.for("IRoleMenuPermissionRepository"),
   IRoleRepository: Symbol.for("IRoleRepository"),
+  IStockAssetRepository: Symbol.for("IStockAssetRepository"),
   IUserRepository: Symbol.for("IUserRepository"),
   IUserLogsRepository: Symbol.for("IUserLogsRepository"),
 

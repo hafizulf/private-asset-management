@@ -14,6 +14,7 @@ export class BuyHistory extends Model <
   declare date: Date;
   declare qty: number;
   declare totalPrice: number;
+  declare memo: CreationOptional<string>;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
   declare deletedAt: CreationOptional<Date>;
@@ -42,12 +43,16 @@ BuyHistory.init({
     allowNull: false,
   },
   qty: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.FLOAT,
     allowNull: false,
   },
   totalPrice: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.FLOAT,
     allowNull: false,
+  },
+  memo: {
+    type: DataTypes.STRING,
+    allowNull: true
   },
   createdAt: DataTypes.DATE,
   updatedAt: DataTypes.DATE,

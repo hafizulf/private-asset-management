@@ -8,7 +8,7 @@ export interface IBuyHistoryView extends IBuyHistory {
 export interface ICommodityBuyHistoryView {
   commodityId: string;
   commodityName: string;
-  totalQty: number;
+  totalQty: string;
   totalPrice: number;
   buyHistories: IBuyHistory[];
 }

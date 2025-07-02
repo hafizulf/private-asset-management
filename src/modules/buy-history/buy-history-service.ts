@@ -8,24 +8,43 @@ import { CommodityErrMessage } from "@/exceptions/error-message-constants";
 import { TStandardPaginateOption } from "../common/dto/pagination-dto";
 import { Pagination } from "../common/pagination";
 import { IBuyHistoryView, ICommodityBuyHistoryView } from "./buy-history-dto";
+import { ManageDbTransactionService } from "../common/services/manage-db-transaction-service";
+import { Transaction } from "sequelize";
+import { IStockAssetRepository } from "../stock-assets/stock-asset-repository-interface";
 
 @injectable()
 export class BuyHistoryService {
   constructor (
+    @inject(TYPES.ManageDbTransactionService) private _dbTransactionService: ManageDbTransactionService,
     @inject(TYPES.ICommodityRepository) private _commodityRepository: ICommodityRepository,
     @inject(TYPES.IBuyHistoryRepository) private _repository: IBuyHistoryRepository,
+    @inject(TYPES.IStockAssetRepository) private _stockAssetRepository: IStockAssetRepository,
   ) {}
 
   public store = async (props: IBuyHistory): Promise<IBuyHistory> => {
-    const commodity = await this._commodityRepository.findById(props.commodityId);
-    if(!commodity) {
-      throw new AppError({
-        statusCode: HttpCode.NOT_FOUND,
-        description: CommodityErrMessage.NOT_FOUND,
-      })
-    }
+    const result = await this._dbTransactionService.handle(
+      async (transaction: Transaction) => {
+        const commodity = await this._commodityRepository.findById(props.commodityId);
+        if(!commodity) {
+          throw new AppError({
+            statusCode: HttpCode.NOT_FOUND,
+            description: CommodityErrMessage.NOT_FOUND,
+          })
+        }
 
-    return (await this._repository.store(props)).unmarshal();
+        // create or update stock asset
+        await this._stockAssetRepository.createOrUpdate({
+          commodityId: commodity.id,
+          qty: props.qty
+        }, { transaction });
+    
+        // store buy history
+        return (await this._repository.store(props)).unmarshal();
+      },
+      "Failed to store buy history",
+    )
+
+    return result;
   }
 
   public async findAll(
@@ -92,7 +111,7 @@ export class BuyHistoryService {
     const response: ICommodityBuyHistoryView = {
       commodityId: data[0]?.commodityId!,
       commodityName: data[0]?.commodity?.name!,
-      totalQty: data.reduce((sum, el) => sum + el.qty, 0),
+      totalQty: `${data.reduce((sum, el) => sum + el.qty, 0)} ${data[0]?.commodity?.unit}`,
       totalPrice: data.reduce((sum, el) => sum + el.totalPrice, 0),
       buyHistories: [],
     }

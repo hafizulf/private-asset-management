@@ -71,6 +71,7 @@ import { IRoleMenuPermissionRepository } from "@/modules/access-managements/role
 import { IOriginRepository } from "@/modules/origins/origin-repository-interface";
 import { IBuyHistoryRepository } from "@/modules/buy-history/buy-history-repository-interface";
 import { ICommodityRepository } from "@/modules/commodity/commodity-repository-interface";
+import { IStockAssetRepository } from "@/modules/stock-assets/stock-asset-repository-interface";
 
 // Import Repository
 import { RoleRepository } from "@/modules/roles/role-repository";
@@ -86,6 +87,7 @@ import { RoleMenuPermissionRepository } from "@/modules/access-managements/role-
 import { OriginRepository } from "@/modules/origins/origin-repository";
 import { BuyHistoryRepository } from "@/modules/buy-history/buy-history-repository";
 import { CommodityRepository } from "@/modules/commodity/commodity-repository";
+import { StockAssetRepository } from "@/modules/stock-assets/stock-asset-repository";
 
 // Import Socket Namespace
 import { NamespaceConfigService } from "@/libs/websocket/namespaces/namespace-config-service";
@@ -198,6 +200,9 @@ container
 container
   .bind<ICommodityRepository>(TYPES.ICommodityRepository)
   .to(CommodityRepository);
+container
+  .bind<IStockAssetRepository>(TYPES.IStockAssetRepository)
+  .to(StockAssetRepository);
 
 // Socket Namespace
 container

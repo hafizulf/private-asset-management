@@ -19,6 +19,7 @@ export const createBuyHistorySchema = z.object({
   }, z.date()),
   qty: z.number().min(1),
   totalPrice: z.number().min(1),
+  memo: z.string().optional(),
 });
 
 export const paginatedBuyHistorySchema = paginatedSchema.extend({

@@ -10,7 +10,7 @@ export interface IStockAsset {
   deletedAt?: Date;
 }
 
-export class StockAsset 
+export class StockAssetDomain
   extends DomainEntity<IStockAsset>
   implements DefaultEntityBehaviour<IStockAsset> 
 {
@@ -19,8 +19,8 @@ export class StockAsset
     super(data, id);
   }
 
-  public static create(props: IStockAsset): StockAsset {
-    return new StockAsset(props);
+  public static create(props: IStockAsset): StockAssetDomain {
+    return new StockAssetDomain(props);
   }
 
   public unmarshal(): IStockAsset {

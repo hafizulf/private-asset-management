@@ -109,7 +109,7 @@ export class BuyHistoryRepository implements IBuyHistoryRepository {
     const data = await BuyHistoryPersistence.findAll({
       include: {
         model: CommodityPersistence,
-        attributes: ["name"],
+        attributes: ["name", "unit"],
       },
       where: {
         commodityId,
