@@ -6,7 +6,6 @@ import TYPES from "./types";
 import { IServer, Server } from "@/presentation/server";
 import { Bootstrap } from "@/presentation/bootstrap";
 import { Cron } from "@/libs/cron-job/cron";
-import { SocketIO } from "@/libs/websocket";
 
 // Import Routes
 import { Routes } from "@/presentation/routes";
@@ -48,7 +47,6 @@ import { DashboardTotalService } from "@/modules/dashboard-totals/dashboard-tota
 import { AnnouncementService } from "@/modules/announcements/announcement-service";
 import { ManageDbTransactionService } from "@/modules/common/services/manage-db-transaction-service";
 import { UserLogsService } from "@/modules/user-logs/user-logs-service";
-import { MqttService } from "@/modules/common/services/mqtt-service";
 import { MenuService } from "@/modules/access-managements/menus/menu-service";
 import { PermissionService } from "@/modules/access-managements/permissions/permission-service";
 import { MenuPermissionService } from "@/modules/access-managements/menu-permissions/menu-permission-service";
@@ -89,18 +87,6 @@ import { BuyHistoryRepository } from "@/modules/buy-history/buy-history-reposito
 import { CommodityRepository } from "@/modules/commodity/commodity-repository";
 import { StockAssetRepository } from "@/modules/stock-assets/stock-asset-repository";
 
-// Import Socket Namespace
-import { NamespaceConfigService } from "@/libs/websocket/namespaces/namespace-config-service";
-import { DashboardTotalNamespace } from "@/libs/websocket/namespaces/dashboard-total-namespace";
-import { AnnouncementNamespace } from "@/libs/websocket/namespaces/announcement-namespace";
-// Import Socket Middleware
-import { SocketAuthenticationMiddleware } from "@/libs/websocket/middlewares/socket-authentication-middleware";
-import { SocketAuthorizationMiddleware } from "@/libs/websocket/middlewares/socket-authorization-middleware";
-import { SocketEventWhitelistMiddleware } from "@/libs/websocket/middlewares/socket-event-whitelist-middleware";
-// Import Mqtt
-import { Mqtt } from "@/libs/mqtt/mqtt-index";
-import { MachineTsBoiler1Subscriber } from "./libs/mqtt/subscribers/machine-ts-boiler1-subscriber";
-
 //
 const container = new Container();
 
@@ -108,8 +94,6 @@ const container = new Container();
 container.bind<IServer>(TYPES.Server).to(Server).inSingletonScope();
 container.bind<Bootstrap>(TYPES.Bootstrap).to(Bootstrap).inSingletonScope();
 container.bind<Cron>(Cron).toSelf().inSingletonScope();
-container.bind<SocketIO>(TYPES.SocketIO).to(SocketIO).inSingletonScope();
-container.bind<Mqtt>(Mqtt).toSelf().inSingletonScope();
 
 // Routes
 container.bind<Routes>(Routes).toSelf().inSingletonScope();
@@ -155,7 +139,6 @@ container.bind(TYPES.PermissionService).to(PermissionService);
 container.bind(TYPES.MenuPermissionService).to(MenuPermissionService);
 container.bind(TYPES.RoleMenuPermissionService).to(RoleMenuPermissionService);
 container.bind(TYPES.ManageDbTransactionService).to(ManageDbTransactionService);
-container.bind(TYPES.MqttService).to(MqttService).inSingletonScope();
 container.bind(TYPES.OriginService).to(OriginService);
 container.bind(TYPES.BuyHistoryService).to(BuyHistoryService);
 container.bind(TYPES.CommodityService).to(CommodityService);
@@ -203,31 +186,5 @@ container
 container
   .bind<IStockAssetRepository>(TYPES.IStockAssetRepository)
   .to(StockAssetRepository);
-
-// Socket Namespace
-container
-  .bind<NamespaceConfigService>(TYPES.NamespaceConfigService)
-  .to(NamespaceConfigService)
-  .inSingletonScope();
-container
-  .bind<DashboardTotalNamespace>(TYPES.DashboardTotalNamespace)
-  .to(DashboardTotalNamespace);
-container
-  .bind<AnnouncementNamespace>(TYPES.AnnouncementNamespace)
-  .to(AnnouncementNamespace);
-// Socket Middleware
-container
-  .bind<SocketAuthenticationMiddleware>(TYPES.SocketAuthenticationMiddleware)
-  .to(SocketAuthenticationMiddleware);
-container
-  .bind<SocketAuthorizationMiddleware>(TYPES.SocketAuthorizationMiddleware)
-  .to(SocketAuthorizationMiddleware);
-container
-  .bind<SocketEventWhitelistMiddleware>(TYPES.SocketEventWhitelistMiddleware)
-  .to(SocketEventWhitelistMiddleware);
-// MQTT
-container
-  .bind<MachineTsBoiler1Subscriber>(MachineTsBoiler1Subscriber)
-  .toSelf().inSingletonScope();
 
 export default container;

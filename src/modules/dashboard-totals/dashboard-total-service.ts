@@ -4,14 +4,12 @@ import { IDashboardTotalRepository } from "./dashboard-total-repository-interfac
 import { IDashboardTotal } from "./dashboard-total-domain";
 import { IUserRepository } from "../users/user-repository-interface";
 import { AppError, HttpCode } from "@/exceptions/app-error";
-import { MqttService } from "../common/services/mqtt-service";
 
 @injectable()
 export class DashboardTotalService {
   constructor(
     @inject(TYPES.IDashboardTotalRepository) private _repository: IDashboardTotalRepository,
     @inject(TYPES.IUserRepository) private _userRepository: IUserRepository,
-    @inject(TYPES.MqttService) private _mqttService: MqttService,
   ) {}
 
   async findAll(): Promise<IDashboardTotal[]> {
@@ -37,10 +35,6 @@ export class DashboardTotalService {
       for (const element of data) {
         await this._repository.createOrUpdate(element);
       }
-
-      // Example mqtt publishing
-      const topic = 'device/machine-ts-boiler1/data/dashboard/total';
-      this._mqttService.publish(topic, JSON.stringify(data));
     } catch (error) {
       console.error(error);
       throw new AppError({
