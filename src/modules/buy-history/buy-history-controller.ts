@@ -2,11 +2,10 @@ import { HttpCode } from "@/exceptions/app-error";
 import TYPES from "@/types";
 import { inject, injectable } from "inversify";
 import { Request, Response } from "express";
-import { createBuyHistorySchema, findHistoryByCommoditySchema, findOneBuyHistorySchema, paginatedBuyHistorySchema } from "./buy-history-validation";
+import { createBuyHistorySchema, findHistoryByCommoditySchema, findOneBuyHistorySchema, paginatedBuyHistorySchema, updateBuyHistorySchema } from "./buy-history-validation";
 import { StandardResponse } from "@/libs/standard-response";
 import { validateSchema } from "@/helpers/schema-validator";
 import { BuyHistoryService } from "./buy-history-service";
-import { IBuyHistory } from "./buy-history-domain";
 
 @injectable()
 export class BuyHistoryController {
@@ -16,7 +15,7 @@ export class BuyHistoryController {
 
   public store = async (req: Request, res: Response): Promise<Response> => {
     const validatedReq = validateSchema(createBuyHistorySchema, req.body);
-    const data = await this._service.store(validatedReq as IBuyHistory);
+    const data = await this._service.store(validatedReq);
 
     return StandardResponse.create(res).setResponse({
       message: "Buy history created successfully",
@@ -53,6 +52,18 @@ export class BuyHistoryController {
 
     return StandardResponse.create(res).setResponse({
       message: "Commodity buy history fetched successfully",
+      status: HttpCode.OK,
+      data,
+    }).send();
+  }
+
+  public update = async (req: Request, res: Response): Promise<Response> => {
+    const validatedReq = validateSchema(updateBuyHistorySchema, { ...req.params, ...req.body });
+    const { id, ...updateData } = validatedReq;
+    const data = await this._service.update(id, updateData);
+
+    return StandardResponse.create(res).setResponse({
+      message: "Buy history updated successfully",
       status: HttpCode.OK,
       data,
     }).send();

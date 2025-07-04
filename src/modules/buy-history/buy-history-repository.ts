@@ -10,6 +10,7 @@ import {
   Commodity as CommodityPersistence,
 } from "@/modules/common/sequelize";
 import { Op, Sequelize } from "sequelize";
+import { BaseQueryOption } from "../common/dto/common-dto";
 
 @injectable()
 export class BuyHistoryRepository implements IBuyHistoryRepository {
@@ -57,8 +58,8 @@ export class BuyHistoryRepository implements IBuyHistoryRepository {
     return [rows.map((el) => BuyHistoryDomain.create(el.toJSON())), pagination];
   }
 
-  store = async (props: IBuyHistory): Promise<BuyHistoryDomain> => {
-    const createdBuyHistory = await BuyHistoryPersistence.create(props);
+  store = async (props: IBuyHistory, option?: BaseQueryOption): Promise<BuyHistoryDomain> => {
+    const createdBuyHistory = await BuyHistoryPersistence.create(props, { transaction: option?.transaction });
     return BuyHistoryDomain.create(createdBuyHistory.toJSON());
   }
 

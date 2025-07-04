@@ -1,22 +1,24 @@
-import { AppError, HttpCode } from "@/exceptions/app-error";
 import { z } from "zod";
-import { validateDateString } from "../common/validation/date-schema";
 import { singleUUIDSchema, uuidV7RegexSchema } from "../common/validation/uuid-schema";
 import { paginatedSchema } from "../common/validation/pagination-schema";
+import dayjs from "dayjs";
+
+const format = "DD/MM/YYYY";
 
 export const createBuyHistorySchema = z.object({
   commodityId: singleUUIDSchema,
-  date: z.preprocess((val) => {
-    if (!val || typeof val !== "string") return undefined;
-    try {
-      return validateDateString(val);
-    } catch (error) {
-      throw new AppError({
-        statusCode: HttpCode.VALIDATION_ERROR,
-        description: "Invalid date / format in 'date' field, should be DD/MM/YYYY",
-      });
-    }
-  }, z.date()),
+  date: z
+    .string()
+    .refine((val) => {
+      const parsed = dayjs(val, format, true);
+      return parsed.isValid();
+    }, {
+      message: `Invalid date / format in 'date' field, should be ${format}`,
+    })
+    .transform((val) => {
+      const parsed = dayjs(val, format, true);
+      return parsed.tz("Asia/Jakarta").toDate();
+    }),
   qty: z.number().min(1),
   totalPrice: z.number().min(1),
   memo: z.string().optional(),
@@ -34,3 +36,26 @@ export const findOneBuyHistorySchema = uuidV7RegexSchema;
 export const findHistoryByCommoditySchema = z.object({
   commodityId: singleUUIDSchema,
 })
+
+export const updateBuyHistorySchema = z.object({
+  id: singleUUIDSchema,
+  commodityId: singleUUIDSchema,
+  date: z
+    .string()
+    .refine((val) => {
+      const parsed = dayjs(val, format, true);
+      return parsed.isValid();
+    }, {
+      message: `Invalid date / format in 'date' field, should be ${format}`,
+    })
+    .transform((val) => {
+      const parsed = dayjs(val, format, true);
+      return parsed.tz("Asia/Jakarta").toDate();
+    })
+    .optional(),
+  qty: z.number().optional(),
+  totalPrice: z.number().optional(),
+  memo: z.string().optional(),
+});
+
+export type UpdateBuyHistoryDTO = z.infer<typeof updateBuyHistorySchema>;

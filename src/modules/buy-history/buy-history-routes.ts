@@ -41,7 +41,7 @@ export class BuyHistoryRoutes {
       `${this.routes}/:id`,
       // this.AuthMiddleware.authenticate,
       // this.AuthMiddleware.roleAuthorize([SUPERADMIN, ADMIN]),
-      asyncWrap(this.controller.findAll)
+      asyncWrap(this.controller.update)
     )
   }
 }

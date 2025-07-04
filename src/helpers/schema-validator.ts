@@ -10,11 +10,11 @@ import { AppError } from '@/exceptions/app-error';
  * @returns The validated data
  * @throws AppError if validation fails
  */
-export function validateSchema<T>(
-  schema: z.ZodSchema<T>,
+export function validateSchema<S extends z.ZodTypeAny>(
+  schema: S,
   data: unknown,
-  description: string = 'Validation error'
-): T {
+  description = 'Validation error'
+): z.output<S> {
   const validationResult = schema.safeParse(data);
 
   if (!validationResult.success) {

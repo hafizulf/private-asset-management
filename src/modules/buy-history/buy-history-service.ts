@@ -4,7 +4,7 @@ import { BuyHistoryDomain, IBuyHistory } from "./buy-history-domain";
 import { IBuyHistoryRepository } from "./buy-history-repository-interface";
 import { ICommodityRepository } from "@/modules/commodity/commodity-repository-interface";
 import { AppError, HttpCode } from "@/exceptions/app-error";
-import { CommodityErrMessage } from "@/exceptions/error-message-constants";
+import {  CommodityErrMessage } from "@/exceptions/error-message-constants";
 import { TStandardPaginateOption } from "../common/dto/pagination-dto";
 import { Pagination } from "../common/pagination";
 import { IBuyHistoryView, ICommodityBuyHistoryView } from "./buy-history-dto";
@@ -39,7 +39,7 @@ export class BuyHistoryService {
         }, { transaction });
     
         // store buy history
-        return (await this._repository.store(props)).unmarshal();
+        return (await this._repository.store(props, { transaction })).unmarshal();
       },
       "Failed to store buy history",
     )
@@ -131,5 +131,9 @@ export class BuyHistoryService {
     })
 
     return response;
+  }
+
+  public update = async (id: string, props: Partial<IBuyHistory>): Promise<IBuyHistory> => {
+    return (await this._repository.update(id, props)).unmarshal();
   }
 }

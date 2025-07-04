@@ -4,5 +4,6 @@ import { BuyHistoryDomain, IBuyHistory } from "./buy-history-domain";
 export interface IBuyHistoryRepository 
   extends BaseRepository<BuyHistoryDomain, IBuyHistory> 
 {
-  findByCommodity(commodityId: string): Promise<BuyHistoryDomain[]>
+  findByCommodity(commodityId: string): Promise<BuyHistoryDomain[]>,
+  update(id: string, props: Partial<IBuyHistory>): Promise<BuyHistoryDomain>,
 }
