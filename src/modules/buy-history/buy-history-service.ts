@@ -4,7 +4,7 @@ import { BuyHistoryDomain, IBuyHistory } from "./buy-history-domain";
 import { IBuyHistoryRepository } from "./buy-history-repository-interface";
 import { ICommodityRepository } from "@/modules/commodity/commodity-repository-interface";
 import { AppError, HttpCode } from "@/exceptions/app-error";
-import {  CommodityErrMessage } from "@/exceptions/error-message-constants";
+import {  CommodityErrMessage, StockAssetErrMessage } from "@/exceptions/error-message-constants";
 import { TStandardPaginateOption } from "../common/dto/pagination-dto";
 import { Pagination } from "../common/pagination";
 import { IBuyHistoryView, ICommodityBuyHistoryView } from "./buy-history-dto";
@@ -134,7 +134,38 @@ export class BuyHistoryService {
   }
 
   public update = async (id: string, props: Partial<IBuyHistory>): Promise<IBuyHistory> => {
-    return (await this._repository.update(id, props)).unmarshal();
+    const result = await this._dbTransactionService.handle(
+      async (transaction: Transaction) => {
+        const data = await this._repository.findById(id);
+        const currentQty = data.qty;
+        const newQty = props.qty ?? data.qty;
+        if(newQty !== currentQty) {
+          const dataStockAsset = await this._stockAssetRepository.findByCommodityId(data.commodityId);
+          const stockQty = dataStockAsset.qty;
+          const qtyDiff = newQty - currentQty;
+          const finalResult = stockQty + qtyDiff;
+
+          if(finalResult < 0) {
+            throw new AppError({
+              statusCode: HttpCode.BAD_REQUEST,
+              description: StockAssetErrMessage.INSUFFICIENT_STOCK,
+            })
+          }
+
+          await this._stockAssetRepository.update(dataStockAsset.id, 
+            { 
+              qty: finalResult 
+            }, 
+            { transaction }
+          );
+        }
+
+        return (await this._repository.update(id, props, { transaction })).unmarshal();
+      },
+      "Failed to update buy history",
+    )
+
+    return result;
   }
 
   public delete = async (id: string): Promise<boolean> => {

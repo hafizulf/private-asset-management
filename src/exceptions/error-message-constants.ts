@@ -53,3 +53,7 @@ export enum BuyHistoryErrMessage {
   NOT_FOUND = 'Buy history not found',
   ALREADY_EXISTS = 'Buy history already exists',
 }
+
+export enum StockAssetErrMessage {
+  INSUFFICIENT_STOCK = 'Stock asset quantity is too low for this operation.',
+}

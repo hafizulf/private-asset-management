@@ -53,7 +53,12 @@ export const updateBuyHistorySchema = z.object({
       return parsed.tz("Asia/Jakarta").toDate();
     })
     .optional(),
-  qty: z.number().optional(),
+  qty: z
+  .number()
+  .optional()
+  .refine((val) => val === undefined || val >= 1, {
+    message: 'Qty must be at least 1',
+  }),
   totalPrice: z.number().optional(),
   memo: z.string().optional(),
 });

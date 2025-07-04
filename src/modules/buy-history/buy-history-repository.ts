@@ -81,7 +81,11 @@ export class BuyHistoryRepository implements IBuyHistoryRepository {
     return BuyHistoryDomain.create(data.toJSON());
   }
 
-  update = async (id: string, props: IBuyHistory): Promise<BuyHistoryDomain> => {
+  update = async (
+    id: string, 
+    props: Partial<IBuyHistory>,
+    option?: BaseQueryOption,
+  ): Promise<BuyHistoryDomain> => {
     const data = await BuyHistoryPersistence.findByPk(id);
     if(!data) {
       throw new AppError({
@@ -89,7 +93,7 @@ export class BuyHistoryRepository implements IBuyHistoryRepository {
         description: BuyHistoryErrMessage.NOT_FOUND,
       })
     }
-    const updatedBuyHistory = await data.update(props);
+    const updatedBuyHistory = await data.update(props, { transaction: option?.transaction });
     return BuyHistoryDomain.create(updatedBuyHistory.toJSON());
   }
 
