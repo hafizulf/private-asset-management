@@ -7,4 +7,5 @@ export interface IBuyHistoryRepository
 {
   findByCommodity(commodityId: string): Promise<BuyHistoryDomain[]>,
   update(id: string, props: Partial<IBuyHistory>, option?: BaseQueryOption): Promise<BuyHistoryDomain>,
+  delete(id: string, option?: BaseQueryOption): Promise<boolean>,
 }

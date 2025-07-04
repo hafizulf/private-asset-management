@@ -169,6 +169,33 @@ export class BuyHistoryService {
   }
 
   public delete = async (id: string): Promise<boolean> => {
-    return this._repository.delete(id);
+    const result = await this._dbTransactionService.handle(
+      async (transaction: Transaction) => {
+        const data = await this._repository.findById(id);
+        const dataStockAsset = await this._stockAssetRepository.findByCommodityId(data.commodityId);
+        const stockQty = dataStockAsset.qty;
+        const qtyDiff = data.qty;
+        const finalResult = stockQty - qtyDiff;
+    
+        if(finalResult < 0) {
+          throw new AppError({
+            statusCode: HttpCode.BAD_REQUEST,
+            description: StockAssetErrMessage.INSUFFICIENT_STOCK,
+          })
+        }
+  
+        await this._stockAssetRepository.update(dataStockAsset.id, 
+          {
+            qty: finalResult
+          }, 
+          { transaction }
+        );  
+    
+        return (await this._repository.delete(id, { transaction }));
+      },
+      "Failed to delete buy history",
+    )
+
+    return result;
   }
 }

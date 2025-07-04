@@ -97,7 +97,7 @@ export class BuyHistoryRepository implements IBuyHistoryRepository {
     return BuyHistoryDomain.create(updatedBuyHistory.toJSON());
   }
 
-  delete = async (id: string): Promise<boolean> => {
+  delete = async (id: string, option?: BaseQueryOption): Promise<boolean> => {
     const data = await BuyHistoryPersistence.findByPk(id);
     if(!data) {
       throw new AppError({
@@ -106,7 +106,7 @@ export class BuyHistoryRepository implements IBuyHistoryRepository {
       })
     }
 
-    await data.destroy();
+    await data.destroy({ transaction: option?.transaction });
     return true;
   }
 
