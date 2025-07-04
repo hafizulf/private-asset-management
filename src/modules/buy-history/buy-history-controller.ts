@@ -2,7 +2,14 @@ import { HttpCode } from "@/exceptions/app-error";
 import TYPES from "@/types";
 import { inject, injectable } from "inversify";
 import { Request, Response } from "express";
-import { createBuyHistorySchema, findHistoryByCommoditySchema, findOneBuyHistorySchema, paginatedBuyHistorySchema, updateBuyHistorySchema } from "./buy-history-validation";
+import { 
+  createBuyHistorySchema, 
+  deleteBuyHistorySchema, 
+  findHistoryByCommoditySchema, 
+  findOneBuyHistorySchema, 
+  paginatedBuyHistorySchema, 
+  updateBuyHistorySchema 
+} from "./buy-history-validation";
 import { StandardResponse } from "@/libs/standard-response";
 import { validateSchema } from "@/helpers/schema-validator";
 import { BuyHistoryService } from "./buy-history-service";
@@ -66,6 +73,16 @@ export class BuyHistoryController {
       message: "Buy history updated successfully",
       status: HttpCode.OK,
       data,
+    }).send();
+  }
+
+  public delete = async (req: Request, res: Response): Promise<Response> => {
+    const validatedReq = validateSchema(deleteBuyHistorySchema, req.params);
+    await this._service.delete(validatedReq.id);
+
+    return StandardResponse.create(res).setResponse({
+      message: "Buy history deleted successfully",
+      status: HttpCode.OK,
     }).send();
   }
 }

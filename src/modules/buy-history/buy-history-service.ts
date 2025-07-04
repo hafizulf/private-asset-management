@@ -136,4 +136,8 @@ export class BuyHistoryService {
   public update = async (id: string, props: Partial<IBuyHistory>): Promise<IBuyHistory> => {
     return (await this._repository.update(id, props)).unmarshal();
   }
+
+  public delete = async (id: string): Promise<boolean> => {
+    return this._repository.delete(id);
+  }
 }

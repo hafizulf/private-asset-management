@@ -58,4 +58,4 @@ export const updateBuyHistorySchema = z.object({
   memo: z.string().optional(),
 });
 
-export type UpdateBuyHistoryDTO = z.infer<typeof updateBuyHistorySchema>;
+export const deleteBuyHistorySchema = uuidV7RegexSchema;

@@ -43,5 +43,11 @@ export class BuyHistoryRoutes {
       // this.AuthMiddleware.roleAuthorize([SUPERADMIN, ADMIN]),
       asyncWrap(this.controller.update)
     )
+    router.delete(
+      `${this.routes}/:id`,
+      // this.AuthMiddleware.authenticate,
+      // this.AuthMiddleware.roleAuthorize([SUPERADMIN, ADMIN]),
+      asyncWrap(this.controller.delete)
+    )
   }
 }
