@@ -20,6 +20,7 @@ import { RoleMenuPermissionRoutes } from "@/modules/access-managements/role-menu
 import { OriginRoutes } from "@/modules/origins/origin-routes";
 import { BuyHistoryRoutes } from "@/modules/buy-history/buy-history-routes";
 import { CommodityRoutes } from "@/modules/commodity/commodity-routes";
+import { SellHistoryRoutes } from "@/modules/sell-history/sell-history-routes";
 
 // Import Middlewares
 import { AuthMiddleware } from "@/presentation/middlewares/auth-middleware";
@@ -36,6 +37,7 @@ import { RoleMenuPermissionController } from "@/modules/access-managements/role-
 import { OriginController } from "@/modules/origins/origin-controller";
 import { BuyHistoryController } from "@/modules/buy-history/buy-history-controller";
 import { CommodityController } from "@/modules/commodity/commodity-controller";
+import { SellHistoryController } from "@/modules/sell-history/sell-history-controller";
 
 // Import Services
 import { BackgroundServiceManager } from "./modules/common/services/background-service-manager";
@@ -54,6 +56,7 @@ import { RoleMenuPermissionService } from "@/modules/access-managements/role-men
 import { OriginService } from "@/modules/origins/origin-service";
 import { BuyHistoryService } from "@/modules/buy-history/buy-history-service";
 import { CommodityService } from "@/modules/commodity/commodity-service";
+import { SellHistoryService } from "@/modules/sell-history/sell-history-service";
 
 // Import Interface Repository
 import { IRoleRepository } from "@/modules/roles/role-repository-interface";
@@ -70,6 +73,7 @@ import { IOriginRepository } from "@/modules/origins/origin-repository-interface
 import { IBuyHistoryRepository } from "@/modules/buy-history/buy-history-repository-interface";
 import { ICommodityRepository } from "@/modules/commodity/commodity-repository-interface";
 import { IStockAssetRepository } from "@/modules/stock-assets/stock-asset-repository-interface";
+import { ISellHistoryRepository } from "@/modules/sell-history/sell-history-repository-interface";
 
 // Import Repository
 import { RoleRepository } from "@/modules/roles/role-repository";
@@ -86,6 +90,7 @@ import { OriginRepository } from "@/modules/origins/origin-repository";
 import { BuyHistoryRepository } from "@/modules/buy-history/buy-history-repository";
 import { CommodityRepository } from "@/modules/commodity/commodity-repository";
 import { StockAssetRepository } from "@/modules/stock-assets/stock-asset-repository";
+import { SellHistoryRepository } from "@/modules/sell-history/sell-history-repository";
 
 //
 const container = new Container();
@@ -108,6 +113,7 @@ container.bind<RoleMenuPermissionRoutes>(RoleMenuPermissionRoutes).toSelf().inSi
 container.bind<OriginRoutes>(OriginRoutes).toSelf().inSingletonScope();
 container.bind<BuyHistoryRoutes>(BuyHistoryRoutes).toSelf().inSingletonScope();
 container.bind<CommodityRoutes>(CommodityRoutes).toSelf().inSingletonScope();
+container.bind<SellHistoryRoutes>(SellHistoryRoutes).toSelf().inSingletonScope();
 
 // Middleware
 container.bind(AuthMiddleware).toSelf();
@@ -124,6 +130,7 @@ container.bind(RoleMenuPermissionController).toSelf();
 container.bind(OriginController).toSelf();
 container.bind(BuyHistoryController).toSelf();
 container.bind(CommodityController).toSelf();
+container.bind(SellHistoryController).toSelf();
 
 // Services
 container.bind<BackgroundServiceManager>(TYPES.BackgroundServiceManager).to(BackgroundServiceManager);
@@ -142,6 +149,7 @@ container.bind(TYPES.ManageDbTransactionService).to(ManageDbTransactionService);
 container.bind(TYPES.OriginService).to(OriginService);
 container.bind(TYPES.BuyHistoryService).to(BuyHistoryService);
 container.bind(TYPES.CommodityService).to(CommodityService);
+container.bind(TYPES.SellHistoryService).to(SellHistoryService);
 
 // Repository
 container
@@ -186,5 +194,8 @@ container
 container
   .bind<IStockAssetRepository>(TYPES.IStockAssetRepository)
   .to(StockAssetRepository);
+container
+  .bind<ISellHistoryRepository>(TYPES.ISellHistoryRepository)
+  .to(SellHistoryRepository);
 
 export default container;

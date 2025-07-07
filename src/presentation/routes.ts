@@ -11,6 +11,7 @@ import { WebAuthRoutes } from "@/modules/authentications/web-auth-routes";
 import { OriginRoutes } from "@/modules/origins/origin-routes";
 import { BuyHistoryRoutes } from "@/modules/buy-history/buy-history-routes";
 import { CommodityRoutes } from "@/modules/commodity/commodity-routes";
+import { SellHistoryRoutes } from "@/modules/sell-history/sell-history-routes";
 
 @injectable()
 export class Routes {
@@ -24,6 +25,7 @@ export class Routes {
     private permissionRoutes: PermissionRoutes,
     private roleMenuPermissionRoutes: RoleMenuPermissionRoutes,
     private roleRoutes: RoleRoutes,
+    private sellRoutes: SellHistoryRoutes,
     private userRoutes: UserRoutes,
     private webAuthRoutes: WebAuthRoutes,
   ) {}
@@ -38,6 +40,7 @@ export class Routes {
     this.permissionRoutes.setRoutes(router);
     this.roleMenuPermissionRoutes.setRoutes(router);
     this.roleRoutes.setRoutes(router);
+    this.sellRoutes.setRoutes(router);
     this.userRoutes.setRoutes(router);
     this.webAuthRoutes.setRoutes(router);
   }

@@ -1,27 +1,27 @@
 import TYPES from "@/types";
 import { inject, injectable } from "inversify";
-import { BuyHistoryDomain, IBuyHistory } from "./buy-history-domain";
-import { IBuyHistoryRepository } from "./buy-history-repository-interface";
+import { SellHistoryDomain, ISellHistory } from "./sell-history-domain";
+import { ISellHistoryRepository } from "./sell-history-repository-interface";
 import { ICommodityRepository } from "@/modules/commodity/commodity-repository-interface";
 import { AppError, HttpCode } from "@/exceptions/app-error";
 import {  CommodityErrMessage, StockAssetErrMessage } from "@/exceptions/error-message-constants";
 import { TStandardPaginateOption } from "../common/dto/pagination-dto";
 import { Pagination } from "../common/pagination";
-import { IBuyHistoryView, ICommodityBuyHistoryView } from "./buy-history-dto";
+import { ISellHistoryView, ICommoditySellHistoryView } from "./sell-history-dto";
 import { ManageDbTransactionService } from "../common/services/manage-db-transaction-service";
 import { Transaction } from "sequelize";
 import { IStockAssetRepository } from "../stock-assets/stock-asset-repository-interface";
 
 @injectable()
-export class BuyHistoryService {
+export class SellHistoryService {
   constructor (
     @inject(TYPES.ManageDbTransactionService) private _dbTransactionService: ManageDbTransactionService,
     @inject(TYPES.ICommodityRepository) private _commodityRepository: ICommodityRepository,
-    @inject(TYPES.IBuyHistoryRepository) private _repository: IBuyHistoryRepository,
+    @inject(TYPES.ISellHistoryRepository) private _repository: ISellHistoryRepository,
     @inject(TYPES.IStockAssetRepository) private _stockAssetRepository: IStockAssetRepository,
   ) {}
 
-  public store = async (props: IBuyHistory): Promise<IBuyHistory> => {
+  public store = async (props: ISellHistory): Promise<ISellHistory> => {
     const result = await this._dbTransactionService.handle(
       async (transaction: Transaction) => {
         const commodity = await this._commodityRepository.findById(props.commodityId);
@@ -32,16 +32,23 @@ export class BuyHistoryService {
           })
         }
 
-        // create or update stock asset
-        await this._stockAssetRepository.createOrUpdate({
-          commodityId: commodity.id,
-          qty: props.qty
-        }, { transaction });
-    
-        // store buy history
+        const dataStockAsset = await this._stockAssetRepository.findByCommodityId(props.commodityId);
+        const stockQty = dataStockAsset.qty;
+        const qtyToSale = props.qty;
+
+        if(stockQty < qtyToSale) {
+          throw new AppError({
+            statusCode: HttpCode.BAD_REQUEST,
+            description: StockAssetErrMessage.INSUFFICIENT_STOCK,
+          })
+        }
+
+        const qty = stockQty - qtyToSale;
+        await this._stockAssetRepository.update(dataStockAsset.id, { qty }, { transaction });
+
         return (await this._repository.store(props, { transaction })).unmarshal();
       },
-      "Failed to store buy history",
+      "Failed to store sell history",
     )
 
     return result;
@@ -49,7 +56,7 @@ export class BuyHistoryService {
 
   public findAll = async (
     paginateOption?: TStandardPaginateOption
-  ): Promise<[IBuyHistoryView[], Pagination?]> => {
+  ): Promise<[ISellHistoryView[], Pagination?]> => {
     if(
       paginateOption?.search ||
       (paginateOption?.page && paginateOption?.limit)
@@ -65,7 +72,7 @@ export class BuyHistoryService {
     return [this.transformData(await this._repository.findAll())];
   }
 
-  private transformData(data: BuyHistoryDomain[]): IBuyHistoryView[] {
+  private transformData(data: SellHistoryDomain[]): ISellHistoryView[] {
     const transformedData = data.map((el) => {
       const { commodity, ...rest } = el.unmarshal();
       return {
@@ -80,7 +87,7 @@ export class BuyHistoryService {
     return transformedData;
   }
 
-  public findOne = async (id: string): Promise<IBuyHistoryView> => {
+  public findOne = async (id: string): Promise<ISellHistoryView> => {
     const data = await this._repository.findById(id);
     const { commodity, ...rest } = data.unmarshal();
 
@@ -94,7 +101,7 @@ export class BuyHistoryService {
     }
   }
 
-  public findByCommodity = async (commodityId: string): Promise<ICommodityBuyHistoryView | []> => {
+  public findByCommodity = async (commodityId: string): Promise<ICommoditySellHistoryView | []> => {
     const commodity = await this._commodityRepository.findById(commodityId);
     if(!commodity) {
       throw new AppError({
@@ -108,19 +115,19 @@ export class BuyHistoryService {
       return [];
     }
 
-    const response: ICommodityBuyHistoryView = {
+    const response: ICommoditySellHistoryView = {
       commodityId: data[0]?.commodityId!,
       commodityName: data[0]?.commodity?.name!,
       totalQty: `${data.reduce((sum, el) => sum + el.qty, 0)} ${data[0]?.commodity?.unit}`,
       totalPrice: data.reduce((sum, el) => sum + el.totalPrice, 0),
-      buyHistories: [],
+      sellHistories: [],
     }
 
     // if a > b, return -1 will sort a before b, if a < b, return 1 will sort a after b
     data.sort((a, b) => (a.date > b.date ? -1 : 1)); 
     
     data.forEach((el) => {
-      response.buyHistories.push({
+      response.sellHistories.push({
         ...el,
         commodityId: undefined!,
         commodity: undefined,
@@ -133,36 +140,28 @@ export class BuyHistoryService {
     return response;
   }
 
-  public update = async (id: string, props: Partial<IBuyHistory>): Promise<IBuyHistory> => {
+  public update = async (id: string, props: Partial<ISellHistory>): Promise<ISellHistory> => {
     const result = await this._dbTransactionService.handle(
       async (transaction: Transaction) => {
         const data = await this._repository.findById(id);
-        const currentQty = data.qty;
-        const newQty = props.qty ?? data.qty;
-        if(newQty !== currentQty) {
-          const dataStockAsset = await this._stockAssetRepository.findByCommodityId(data.commodityId);
-          const stockQty = dataStockAsset.qty;
-          const qtyDiff = newQty - currentQty;
-          const finalResult = stockQty + qtyDiff;
+        const dataStockAsset = await this._stockAssetRepository.findByCommodityId(data.commodityId);
 
-          if(finalResult < 0) {
-            throw new AppError({
-              statusCode: HttpCode.BAD_REQUEST,
-              description: StockAssetErrMessage.INSUFFICIENT_STOCK,
-            })
-          }
+        const newSaleQty = props.qty ?? data.qty;
+        const qtyDiff = data.qty - newSaleQty;
+        const qty = dataStockAsset.qty + qtyDiff;
 
-          await this._stockAssetRepository.update(dataStockAsset.id, 
-            { 
-              qty: finalResult 
-            }, 
-            { transaction }
-          );
+        if(qty < 0) {
+          throw new AppError({
+            statusCode: HttpCode.BAD_REQUEST,
+            description: StockAssetErrMessage.INSUFFICIENT_STOCK,
+          })
         }
+
+        await this._stockAssetRepository.update(dataStockAsset.id,  { qty }, { transaction });
 
         return (await this._repository.update(id, props, { transaction })).unmarshal();
       },
-      "Failed to update buy history",
+      "Failed to update sell history",
     )
 
     return result;
@@ -173,20 +172,13 @@ export class BuyHistoryService {
       async (transaction: Transaction) => {
         const data = await this._repository.findById(id);
         const dataStockAsset = await this._stockAssetRepository.findByCommodityId(data.commodityId);
-        const stockQty = dataStockAsset.qty;
-        const qtyDiff = data.qty;
-        const finalResult = stockQty - qtyDiff;
-  
-        await this._stockAssetRepository.update(dataStockAsset.id, 
-          {
-            qty: finalResult
-          }, 
-          { transaction }
-        );  
+        const qty = dataStockAsset.qty + data.qty;
+
+        await this._stockAssetRepository.update(dataStockAsset.id,  { qty }, { transaction });
     
         return (await this._repository.delete(id, { transaction }));
       },
-      "Failed to delete buy history",
+      "Failed to delete sell history",
     )
 
     return result;

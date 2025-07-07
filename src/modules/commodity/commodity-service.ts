@@ -6,12 +6,14 @@ import { TStandardPaginateOption } from "../common/dto/pagination-dto";
 import { Pagination } from "../common/pagination";
 import { AppError, HttpCode } from "@/exceptions/app-error";
 import { IBuyHistoryRepository } from "../buy-history/buy-history-repository-interface";
+import { ISellHistoryRepository } from "../sell-history/sell-history-repository-interface";
 
 @injectable()
 export class CommodityService {
   constructor (
     @inject(TYPES.ICommodityRepository) private _repository: ICommodityRepository,
     @inject(TYPES.IBuyHistoryRepository) private _buyHistoryRepository: IBuyHistoryRepository,
+    @inject(TYPES.ISellHistoryRepository) private _sellHistoryRepository: ISellHistoryRepository,
   ) {}
 
   public store = async (props: ICommodity): Promise<ICommodity> => {
@@ -51,13 +53,13 @@ export class CommodityService {
       })
     }
 
-    // const dataSellHistory = await this._repository.findAllByCommodityId(id);
-    // if(dataSellHistory.length > 0) {
-    //   throw new AppError({
-    //     statusCode: HttpCode.BAD_REQUEST,
-    //     description: "Cannot delete commodity because it has sell history",
-    //   })
-    // }
+    const dataSellHistory = await this._sellHistoryRepository.findByCommodity(id);
+    if(dataSellHistory.length > 0) {
+      throw new AppError({
+        statusCode: HttpCode.BAD_REQUEST,
+        description: "Cannot delete commodity because it has sell history",
+      })
+    }
 
     return (await this._repository.delete(id));
   }

@@ -1,9 +1,11 @@
+import { ICommodity } from "../commodity/commodity-domain";
 import { DomainEntity } from "../common/domainEntity";
 import { DefaultEntityBehaviour } from "../common/dto/common-dto";
 
 export interface ISellHistory {
   id?: string;
   commodityId: string;
+  commodity?: ICommodity;
   date: Date;
   qty: number;
   totalPrice: number;
@@ -13,7 +15,7 @@ export interface ISellHistory {
   deletedAt?: Date;
 }
 
-export class SellHistory 
+export class SellHistoryDomain 
   extends DomainEntity<ISellHistory> 
   implements DefaultEntityBehaviour<ISellHistory> 
 {
@@ -22,14 +24,15 @@ export class SellHistory
     super(data, id);
   }
 
-  public static create(props: ISellHistory): SellHistory {
-    return new SellHistory(props);
+  public static create(props: ISellHistory): SellHistoryDomain {
+    return new SellHistoryDomain(props);
   }
 
   public unmarshal(): ISellHistory {
     return {
       id: this.id,
       commodityId: this.commodityId,
+      commodity: this.commodity,
       date: this.date,
       qty: this.qty,
       totalPrice: this.totalPrice,
@@ -46,6 +49,10 @@ export class SellHistory
 
   get commodityId(): string {
     return this.props.commodityId;
+  }
+
+  get commodity(): ICommodity | undefined {
+    return this.props.commodity;
   }
 
   get date(): Date {
