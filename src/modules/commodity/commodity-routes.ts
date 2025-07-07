@@ -19,5 +19,29 @@ export class CommodityRoutes {
       // this.AuthMiddleware.roleAuthorize([SUPERADMIN]),
       asyncWrap(this.controller.store)
     )
+    router.get(
+      `${this.routes}/:id`,
+      // this.AuthMiddleware.authenticate,
+      // this.AuthMiddleware.roleAuthorize([SUPERADMIN]),
+      asyncWrap(this.controller.findOne)
+    )
+    router.get(
+      this.routes,
+      // this.AuthMiddleware.authenticate,
+      // this.AuthMiddleware.roleAuthorize([SUPERADMIN]),
+      asyncWrap(this.controller.findAll)
+    )
+    router.put(
+      `${this.routes}/:id`,
+      // this.AuthMiddleware.authenticate,
+      // this.AuthMiddleware.roleAuthorize([SUPERADMIN]),
+      asyncWrap(this.controller.update)
+    )
+    router.delete(
+      `${this.routes}/:id`,
+      // this.AuthMiddleware.authenticate,
+      // this.AuthMiddleware.roleAuthorize([SUPERADMIN]),
+      asyncWrap(this.controller.delete)
+    )
   }
 }

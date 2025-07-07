@@ -47,9 +47,9 @@ export class BuyHistoryService {
     return result;
   }
 
-  public async findAll(
+  public findAll = async (
     paginateOption?: TStandardPaginateOption
-  ): Promise<[IBuyHistoryView[], Pagination?]> {
+  ): Promise<[IBuyHistoryView[], Pagination?]> => {
     if(
       paginateOption?.search ||
       (paginateOption?.page && paginateOption?.limit)
