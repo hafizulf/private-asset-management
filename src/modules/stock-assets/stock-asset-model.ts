@@ -1,4 +1,4 @@
-import { Association, CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model } from "sequelize";
+import { Association, CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model, NonAttribute } from "sequelize";
 import { IStockAsset } from "./stock-asset-domain";
 import { sequelize } from "@/config/database";
 import { uuidv7 } from "uuidv7";
@@ -10,6 +10,7 @@ export class StockAsset extends Model <
 > implements IStockAsset {
   declare id: CreationOptional<string>;
   declare commodityId: string;
+  declare commodity?: NonAttribute<Commodity>;
   declare qty: number;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;

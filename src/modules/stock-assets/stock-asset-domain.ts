@@ -1,9 +1,11 @@
+import { ICommodity } from "../commodity/commodity-domain";
 import { DomainEntity } from "../common/domainEntity";
 import { DefaultEntityBehaviour } from "../common/dto/common-dto";
 
 export interface IStockAsset {
   id?: string;
   commodityId: string;
+  commodity?: ICommodity;
   qty: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -27,6 +29,7 @@ export class StockAssetDomain
     return {
       id: this.id,
       commodityId: this.commodityId,
+      commodity: this.commodity,
       qty: this.qty,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
@@ -40,6 +43,10 @@ export class StockAssetDomain
 
   get commodityId(): string {
     return this.props.commodityId;
+  }
+
+  get commodity(): ICommodity | undefined {
+    return this.props.commodity;
   }
 
   get qty(): number {

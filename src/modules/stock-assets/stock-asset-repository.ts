@@ -4,8 +4,12 @@ import { TStandardPaginateOption } from "../common/dto/pagination-dto";
 import { Pagination } from "../common/pagination";
 import { StockAssetDomain, IStockAsset } from "./stock-asset-domain";
 import { BaseQueryOption } from "../common/dto/common-dto";
-import { StockAsset as StockAssetPersistence } from "@/modules/common/sequelize";
+import { 
+  StockAsset as StockAssetPersistence,
+  Commodity as CommodityPersistence,
+} from "@/modules/common/sequelize";
 import { AppError, HttpCode } from "@/exceptions/app-error";
+import { Op, Sequelize } from "sequelize";
 
 @injectable()
 export class StockAssetRepository implements IStockAssetRepository {
@@ -31,6 +35,12 @@ export class StockAssetRepository implements IStockAssetRepository {
 
   findByCommodityId = async (commodityId: string): Promise<StockAssetDomain> => {
     const data = await StockAssetPersistence.findOne({
+      include: [
+        {
+          model: CommodityPersistence,
+          attributes: ["name", "unit"],
+        },
+      ],
       where: {
         commodityId: commodityId
       }
@@ -46,18 +56,66 @@ export class StockAssetRepository implements IStockAssetRepository {
     return StockAssetDomain.create(data.toJSON());
   }
 
-  findAll(): Promise<StockAssetDomain[]> {
-    throw new Error("Method not implemented.");
+  findAll = async (): Promise<StockAssetDomain[]> => {
+    const data = await StockAssetPersistence.findAll({
+      include: [
+        {
+          model: CommodityPersistence,
+          attributes: ["name", "unit"],
+        },
+      ],
+      order: [[Sequelize.col("commodity.name"), "DESC"]], // or "ASC" if you prefer
+    });
+
+    return data.map((el) => StockAssetDomain.create(el.toJSON()));
+  };
+
+  findAllWithPagination = async (
+    paginateOption: TStandardPaginateOption, 
+    pagination: Pagination
+  ): Promise<[StockAssetDomain[], Pagination]> => {
+    const search = paginateOption.search;
+    const orderBy = paginateOption.orderBy ? paginateOption.orderBy : "commodityName";
+    const sort = paginateOption.sort ? paginateOption.sort : "DESC";
+    const searchCondition = search
+      ? {
+          [Op.or]: [
+            Sequelize.literal(`"commodity"."name" ILIKE :search`),
+          ],
+        }
+      : {};
+
+    const { rows, count } = await StockAssetPersistence.findAndCountAll({
+      include: [
+        {
+          model: CommodityPersistence, 
+          attributes: ["name", "unit"],
+        },
+      ],
+      where: {
+        ...searchCondition,
+      },
+      replacements: { search: `%${search}%` },
+      order: [
+        orderBy === "commodityName"
+          ? [Sequelize.col("commodity.name"), sort] 
+          : [Sequelize.col(orderBy), sort],
+      ],
+      limit: pagination.limit,
+      offset: pagination.offset,
+    });
+
+    pagination.generateMeta(count, rows.length);
+    return [rows.map((el) => StockAssetDomain.create(el.toJSON())), pagination];
   }
-  findAllWithPagination(_paginateOption: TStandardPaginateOption, _pagination: Pagination): Promise<[StockAssetDomain[], Pagination]> {
-    throw new Error("Method not implemented.");
-  }
+
   store(_props: IStockAsset): Promise<StockAssetDomain> {
     throw new Error("Method not implemented.");
   }
   findById(_id: string): Promise<StockAssetDomain> {
     throw new Error("Method not implemented.");
   }
+
   update = async (
     id: string, 
     props: Partial<IStockAsset>, 
@@ -73,6 +131,7 @@ export class StockAssetRepository implements IStockAssetRepository {
     await data.update(props, { transaction: option?.transaction });
     return StockAssetDomain.create(data.toJSON());
   }
+
   delete(_id: string): Promise<boolean> {
     throw new Error("Method not implemented.");
   }

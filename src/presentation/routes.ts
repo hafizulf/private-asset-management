@@ -12,6 +12,7 @@ import { OriginRoutes } from "@/modules/origins/origin-routes";
 import { BuyHistoryRoutes } from "@/modules/buy-history/buy-history-routes";
 import { CommodityRoutes } from "@/modules/commodity/commodity-routes";
 import { SellHistoryRoutes } from "@/modules/sell-history/sell-history-routes";
+import { StockAssetRoutes } from "@/modules/stock-assets/stock-asset-routes";
 
 @injectable()
 export class Routes {
@@ -26,6 +27,7 @@ export class Routes {
     private roleMenuPermissionRoutes: RoleMenuPermissionRoutes,
     private roleRoutes: RoleRoutes,
     private sellRoutes: SellHistoryRoutes,
+    private stockAssetRoutes: StockAssetRoutes,
     private userRoutes: UserRoutes,
     private webAuthRoutes: WebAuthRoutes,
   ) {}
@@ -41,6 +43,7 @@ export class Routes {
     this.roleMenuPermissionRoutes.setRoutes(router);
     this.roleRoutes.setRoutes(router);
     this.sellRoutes.setRoutes(router);
+    this.stockAssetRoutes.setRoutes(router);
     this.userRoutes.setRoutes(router);
     this.webAuthRoutes.setRoutes(router);
   }
