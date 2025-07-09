@@ -5,11 +5,9 @@ import { IWebAuth, WebAuthDomain } from "./web-auth-domain";
 import { IResponseLogin } from "./web-auth-dto";
 import { JWT_SECRET_KEY, JWT_SECRET_TTL, JWT_REFRESH_SECRET_KEY, JWT_REFRESH_SECRET_TTL } from "@/config/env";
 import { JsonWebTokenError, TokenExpiredError } from "jsonwebtoken";
-import { RedisClient } from "@/libs/redis/redis-client";
 import { IUserRepository } from "../users/user-repository-interface";
 import { IRoleRepository } from "../roles/role-repository-interface";
 import { IRefreshTokenRepository } from "../refresh-tokens/refresh-token-repository-interface";
-import { getUserDataKey } from "@/helpers/redis-keys";
 
 @injectable()
 export class WebAuthService {
@@ -45,10 +43,6 @@ export class WebAuthService {
       { user: userDataUnmarshal }, JWT_REFRESH_SECRET_KEY, JWT_REFRESH_SECRET_TTL
     ).unmarshal().token;
     await this._refreshTokenRepository.updateOrCreate(userData.id, refreshToken!);
-
-    // caching user data
-    const userDataKey = getUserDataKey(user.id!);
-    await RedisClient.set(userDataKey, JSON.stringify(userDataUnmarshal), JWT_SECRET_TTL);
 
     return { user, refreshToken, token: auth.token, };
   }

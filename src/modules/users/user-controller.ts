@@ -33,13 +33,13 @@ export class UserController {
     }).withPagination(pagination?.omitProperties("offset")).send();
   }
 
-  public store = async (req: IAuthRequest, res: Response): Promise<Response> => {
+  public store = async (req: Request, res: Response): Promise<Response> => {
     const validatedReq = validateSchema(createUserSchema, {
       ...req.body,
       avatarPath: req.file
     });
     const user = await this._service.store({
-      updatedBy: req.authUser.user.id,
+      updatedBy: "unknown",
       ...validatedReq
     });
 

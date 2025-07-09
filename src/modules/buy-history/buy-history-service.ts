@@ -11,6 +11,7 @@ import { IBuyHistoryView, ICommodityBuyHistoryView } from "./buy-history-dto";
 import { ManageDbTransactionService } from "../common/services/manage-db-transaction-service";
 import { Transaction } from "sequelize";
 import { IStockAssetRepository } from "../stock-assets/stock-asset-repository-interface";
+import { IAuditLogsRepository } from "../audit-logs/audit-logs-repository-interface";
 
 @injectable()
 export class BuyHistoryService {
@@ -19,9 +20,10 @@ export class BuyHistoryService {
     @inject(TYPES.ICommodityRepository) private _commodityRepository: ICommodityRepository,
     @inject(TYPES.IBuyHistoryRepository) private _repository: IBuyHistoryRepository,
     @inject(TYPES.IStockAssetRepository) private _stockAssetRepository: IStockAssetRepository,
+    @inject(TYPES.IAuditLogsRepository) private _auditLogsRepository: IAuditLogsRepository,
   ) {}
 
-  public store = async (props: IBuyHistory): Promise<IBuyHistory> => {
+  public store = async (props: IBuyHistory, userId: string): Promise<IBuyHistory> => {
     const result = await this._dbTransactionService.handle(
       async (transaction: Transaction) => {
         const commodity = await this._commodityRepository.findById(props.commodityId);
@@ -39,7 +41,17 @@ export class BuyHistoryService {
         }, { transaction });
     
         // store buy history
-        return (await this._repository.store(props, { transaction })).unmarshal();
+        const storedBuyHistory = (await this._repository.store(props, { transaction })).unmarshal();
+
+        // add logs
+        await this._auditLogsRepository.store({
+          userId,
+          type: "buy",
+          action: "create",
+          payload: storedBuyHistory,
+        }, { transaction });
+
+        return storedBuyHistory;
       },
       "Failed to store buy history",
     )
@@ -133,7 +145,7 @@ export class BuyHistoryService {
     return response;
   }
 
-  public update = async (id: string, props: Partial<IBuyHistory>): Promise<IBuyHistory> => {
+  public update = async (id: string, props: Partial<IBuyHistory>, userId: string): Promise<IBuyHistory> => {
     const result = await this._dbTransactionService.handle(
       async (transaction: Transaction) => {
         const data = await this._repository.findById(id);
@@ -160,7 +172,16 @@ export class BuyHistoryService {
           );
         }
 
-        return (await this._repository.update(id, props, { transaction })).unmarshal();
+        const updatedBuyHistory = (await this._repository.update(id, props, { transaction })).unmarshal();
+
+        await this._auditLogsRepository.store({
+          userId,
+          type: "buy",
+          action: "update",
+          payload: updatedBuyHistory,
+        }, { transaction });
+
+        return updatedBuyHistory;
       },
       "Failed to update buy history",
     )
@@ -168,7 +189,7 @@ export class BuyHistoryService {
     return result;
   }
 
-  public delete = async (id: string): Promise<boolean> => {
+  public delete = async (id: string, userId: string): Promise<boolean> => {
     const result = await this._dbTransactionService.handle(
       async (transaction: Transaction) => {
         const data = await this._repository.findById(id);
@@ -183,6 +204,13 @@ export class BuyHistoryService {
           }, 
           { transaction }
         );  
+
+        await this._auditLogsRepository.store({
+          userId,
+          type: "buy",
+          action: "delete",
+          payload: data.unmarshal(),
+        }, { transaction });
     
         return (await this._repository.delete(id, { transaction }));
       },

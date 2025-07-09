@@ -77,6 +77,7 @@ import { IBuyHistoryRepository } from "@/modules/buy-history/buy-history-reposit
 import { ICommodityRepository } from "@/modules/commodity/commodity-repository-interface";
 import { IStockAssetRepository } from "@/modules/stock-assets/stock-asset-repository-interface";
 import { ISellHistoryRepository } from "@/modules/sell-history/sell-history-repository-interface";
+import { IAuditLogsRepository } from "@/modules/audit-logs/audit-logs-repository-interface";
 
 // Import Repository
 import { RoleRepository } from "@/modules/roles/role-repository";
@@ -94,6 +95,7 @@ import { BuyHistoryRepository } from "@/modules/buy-history/buy-history-reposito
 import { CommodityRepository } from "@/modules/commodity/commodity-repository";
 import { StockAssetRepository } from "@/modules/stock-assets/stock-asset-repository";
 import { SellHistoryRepository } from "@/modules/sell-history/sell-history-repository";
+import { AuditLogsRepository } from "@/modules/audit-logs/audit-logs-repository";
 
 //
 const container = new Container();
@@ -203,5 +205,8 @@ container
 container
   .bind<ISellHistoryRepository>(TYPES.ISellHistoryRepository)
   .to(SellHistoryRepository);
+container
+  .bind<IAuditLogsRepository>(TYPES.IAuditLogsRepository)
+  .to(AuditLogsRepository);
 
 export default container;

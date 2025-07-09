@@ -13,6 +13,7 @@ import {
 import { StandardResponse } from "@/libs/standard-response";
 import { validateSchema } from "@/helpers/schema-validator";
 import { BuyHistoryService } from "./buy-history-service";
+import { IAuthRequest } from "@/presentation/middlewares/auth-interface";
 
 @injectable()
 export class BuyHistoryController {
@@ -20,9 +21,9 @@ export class BuyHistoryController {
     @inject(TYPES.BuyHistoryService) private _service: BuyHistoryService,
   ) {}
 
-  public store = async (req: Request, res: Response): Promise<Response> => {
+  public store = async (req: IAuthRequest, res: Response): Promise<Response> => {
     const validatedReq = validateSchema(createBuyHistorySchema, req.body);
-    const data = await this._service.store(validatedReq);
+    const data = await this._service.store(validatedReq, req.authUser.user.id);
 
     return StandardResponse.create(res).setResponse({
       message: "Buy history created successfully",
@@ -64,10 +65,10 @@ export class BuyHistoryController {
     }).send();
   }
 
-  public update = async (req: Request, res: Response): Promise<Response> => {
+  public update = async (req: IAuthRequest, res: Response): Promise<Response> => {
     const validatedReq = validateSchema(updateBuyHistorySchema, { ...req.params, ...req.body });
     const { id, ...updateData } = validatedReq;
-    const data = await this._service.update(id, updateData);
+    const data = await this._service.update(id, updateData, req.authUser.user.id);
 
     return StandardResponse.create(res).setResponse({
       message: "Buy history updated successfully",
@@ -76,9 +77,9 @@ export class BuyHistoryController {
     }).send();
   }
 
-  public delete = async (req: Request, res: Response): Promise<Response> => {
+  public delete = async (req: IAuthRequest, res: Response): Promise<Response> => {
     const validatedReq = validateSchema(deleteBuyHistorySchema, req.params);
-    await this._service.delete(validatedReq.id);
+    await this._service.delete(validatedReq.id, req.authUser.user.id);
 
     return StandardResponse.create(res).setResponse({
       message: "Buy history deleted successfully",

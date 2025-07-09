@@ -13,6 +13,7 @@ import { Commodity } from "../commodity/commodity-model";
 import { BuyHistory } from "../buy-history/buy-history-model";
 import { StockAsset } from "../stock-assets/stock-asset-model";
 import { SellHistory } from "../sell-history/sell-history-model";
+import { AuditLogs } from "../audit-logs/audit-logs-model";
 
 export async function sequelizeMigrate(): Promise<void> {
   try {
@@ -22,7 +23,7 @@ export async function sequelizeMigrate(): Promise<void> {
     await Promise.all([
       // DashboardTotal.sync({ alter: false }),
       // Announcement.sync({ alter: false }),
-      // UserLogs.sync({ alter: false }),
+      UserLogs.sync({ alter: false }),
       // Origin.sync({ alter: false }),
     ]);
 
@@ -40,6 +41,7 @@ export async function sequelizeMigrate(): Promise<void> {
     await BuyHistory.sync({ alter: false });
     await StockAsset.sync({ alter: false });
     await SellHistory.sync({ alter: false });
+    await AuditLogs.sync({ alter: false });
 
     console.log("Database migrations completed.");
   } catch (error) {
@@ -91,5 +93,6 @@ export {
   Commodity,
   BuyHistory,
   StockAsset,
-  SellHistory
+  SellHistory,
+  AuditLogs,
 };

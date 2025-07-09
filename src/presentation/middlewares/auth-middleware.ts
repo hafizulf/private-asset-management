@@ -2,14 +2,12 @@ import { Request, Response, NextFunction } from "express";
 import { inject, injectable } from "inversify";
 import TYPES from "@/types";
 import { AppError, HttpCode } from "@/exceptions/app-error";
-import { JWT_SECRET_KEY, JWT_SECRET_TTL } from "@/config/env";
+import { JWT_SECRET_KEY } from "@/config/env";
 import { IAuthRequest } from "./auth-interface";
 import { WebAuthService } from "@/modules/authentications/web-auth-service";
 import { WebAuthDomain } from "@/modules/authentications/web-auth-domain";
 import jwt, { JsonWebTokenError, JwtPayload, TokenExpiredError } from "jsonwebtoken";
-import { RedisClient } from "@/libs/redis/redis-client";
 import { TokenErrMessage } from "@/exceptions/error-message-constants";
-import { getUserDataKey, } from "@/helpers/redis-keys";
 import { UserService } from "@/modules/users/user-service";
 
 @injectable()
@@ -37,16 +35,7 @@ export class AuthMiddleware {
         }));
       }
 
-      const userDataKey = getUserDataKey(decoded.id);
-      const userData = await RedisClient.get(userDataKey);
-
       const newReq = req as IAuthRequest;
-      if (userData) {
-        const parsedUser = JSON.parse(userData);
-        newReq.authUser = WebAuthDomain.create({ token, user: parsedUser }, JWT_SECRET_KEY);
-        return next();
-      }
-
       const authUser = await this._webAuthService.getMe(token, JWT_SECRET_KEY); // verify signature and get user
       if (!authUser?.user?.id) {
         return next(new AppError({
@@ -61,9 +50,6 @@ export class AuthMiddleware {
           description: TokenErrMessage.REVOKED,
         }));
       }
-
-      const ttl = decoded.exp - Math.floor(Date.now() / 1000);
-      await RedisClient.set(userDataKey, JSON.stringify(authUser.user), ttl);
       
       newReq.authUser = WebAuthDomain.create(authUser, JWT_SECRET_KEY);
 
@@ -95,15 +81,9 @@ export class AuthMiddleware {
     return async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
       const authUser = (req as IAuthRequest).authUser;
       const userId = authUser.user.id;
-      const userDataKey = getUserDataKey(userId);
-      const getUserData = await RedisClient.get(userDataKey);
-      let userData = getUserData ? JSON.parse(getUserData) : null;
-      if(!userData) {
-        userData = await this._userService.findWithRoleByUserId(userId);
-        await RedisClient.set(userDataKey, JSON.stringify(userData), JWT_SECRET_TTL);
-      }
-
-      if (!allowedRoles.includes(userData.role.name)) {
+      const userData = await this._userService.findWithRoleByUserId(userId);
+      
+      if (!allowedRoles.includes(userData.role!.name)) {
         return next(new AppError({
           statusCode: HttpCode.FORBIDDEN,
           description: 'Forbidden',
