@@ -26,9 +26,9 @@ export class AuditLogs extends Model <
 
 AuditLogs.init({
   id: {
-    type: "UUID",
+    type: DataTypes.UUID,
     primaryKey: true,
-    defaultValue: uuidv7(),
+    defaultValue: () => uuidv7(),
   },
   userId: {
     type: DataTypes.UUID,

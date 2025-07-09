@@ -11,6 +11,7 @@ import { ISellHistoryView, ICommoditySellHistoryView } from "./sell-history-dto"
 import { ManageDbTransactionService } from "../common/services/manage-db-transaction-service";
 import { Transaction } from "sequelize";
 import { IStockAssetRepository } from "../stock-assets/stock-asset-repository-interface";
+import { IAuditLogsRepository } from "../audit-logs/audit-logs-repository-interface";
 
 @injectable()
 export class SellHistoryService {
@@ -19,9 +20,10 @@ export class SellHistoryService {
     @inject(TYPES.ICommodityRepository) private _commodityRepository: ICommodityRepository,
     @inject(TYPES.ISellHistoryRepository) private _repository: ISellHistoryRepository,
     @inject(TYPES.IStockAssetRepository) private _stockAssetRepository: IStockAssetRepository,
+    @inject(TYPES.IAuditLogsRepository) private _auditLogsRepository: IAuditLogsRepository,
   ) {}
 
-  public store = async (props: ISellHistory): Promise<ISellHistory> => {
+  public store = async (props: ISellHistory, userId: string): Promise<ISellHistory> => {
     const result = await this._dbTransactionService.handle(
       async (transaction: Transaction) => {
         const commodity = await this._commodityRepository.findById(props.commodityId);
@@ -44,9 +46,17 @@ export class SellHistoryService {
         }
 
         const qty = stockQty - qtyToSale;
-        await this._stockAssetRepository.update(dataStockAsset.id, { qty }, { transaction });
 
-        return (await this._repository.store(props, { transaction })).unmarshal();
+        await this._stockAssetRepository.update(dataStockAsset.id, { qty }, { transaction });  // update stock asset
+        const storedSellHistory = (await this._repository.store(props, { transaction })).unmarshal();  // store sell history
+        await this._auditLogsRepository.store({  // add logs
+          userId,
+          type: "sell",
+          action: "create",
+          payload: storedSellHistory,
+        }, { transaction });
+
+        return storedSellHistory;
       },
       "Failed to store sell history",
     )
@@ -140,7 +150,7 @@ export class SellHistoryService {
     return response;
   }
 
-  public update = async (id: string, props: Partial<ISellHistory>): Promise<ISellHistory> => {
+  public update = async (id: string, props: Partial<ISellHistory>, userId: string): Promise<ISellHistory> => {
     const result = await this._dbTransactionService.handle(
       async (transaction: Transaction) => {
         const data = await this._repository.findById(id);
@@ -158,8 +168,15 @@ export class SellHistoryService {
         }
 
         await this._stockAssetRepository.update(dataStockAsset.id,  { qty }, { transaction });
+        const updatedSellHistory = (await this._repository.update(id, props, { transaction })).unmarshal();
+        await this._auditLogsRepository.store({
+          userId,
+          type: "sell",
+          action: "update",
+          payload: updatedSellHistory,
+        }, { transaction });
 
-        return (await this._repository.update(id, props, { transaction })).unmarshal();
+        return updatedSellHistory;
       },
       "Failed to update sell history",
     )
@@ -167,7 +184,7 @@ export class SellHistoryService {
     return result;
   }
 
-  public delete = async (id: string): Promise<boolean> => {
+  public delete = async (id: string, userId: string): Promise<boolean> => {
     const result = await this._dbTransactionService.handle(
       async (transaction: Transaction) => {
         const data = await this._repository.findById(id);
@@ -175,7 +192,12 @@ export class SellHistoryService {
         const qty = dataStockAsset.qty + data.qty;
 
         await this._stockAssetRepository.update(dataStockAsset.id,  { qty }, { transaction });
-    
+        await this._auditLogsRepository.store({
+          userId,
+          type: "sell",
+          action: "delete",
+          payload: data.unmarshal(),
+        }, { transaction });
         return (await this._repository.delete(id, { transaction }));
       },
       "Failed to delete sell history",

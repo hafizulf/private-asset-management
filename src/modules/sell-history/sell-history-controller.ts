@@ -13,6 +13,7 @@ import {
   paginatedSellHistorySchema, 
   updateSellHistorySchema
 } from "./sell-history-validation";
+import { IAuthRequest } from "@/presentation/middlewares/auth-interface";
 
 @injectable()
 export class SellHistoryController {
@@ -20,9 +21,9 @@ export class SellHistoryController {
     @inject(TYPES.SellHistoryService) private _service: SellHistoryService,
   ) {}
 
-  public store = async (req: Request, res: Response): Promise<Response> => {
+  public store = async (req: IAuthRequest, res: Response): Promise<Response> => {
     const validatedReq = validateSchema(createSellHistorySchema, req.body);
-    const data = await this._service.store(validatedReq);
+    const data = await this._service.store(validatedReq, req.authUser.user.id);
 
     return StandardResponse.create(res).setResponse({
       message: "Sell history created successfully",
@@ -64,10 +65,10 @@ export class SellHistoryController {
     }).send();
   }
 
-  public update = async (req: Request, res: Response): Promise<Response> => {
+  public update = async (req: IAuthRequest, res: Response): Promise<Response> => {
     const validatedReq = validateSchema(updateSellHistorySchema, { ...req.params, ...req.body });
     const { id, ...updateData } = validatedReq;
-    const data = await this._service.update(id, updateData);
+    const data = await this._service.update(id, updateData, req.authUser.user.id);
 
     return StandardResponse.create(res).setResponse({
       message: "Sell history updated successfully",
@@ -76,9 +77,9 @@ export class SellHistoryController {
     }).send();
   }
 
-  public delete = async (req: Request, res: Response): Promise<Response> => {
+  public delete = async (req: IAuthRequest, res: Response): Promise<Response> => {
     const validatedReq = validateSchema(deleteSellHistorySchema, req.params);
-    await this._service.delete(validatedReq.id);
+    await this._service.delete(validatedReq.id, req.authUser.user.id);
 
     return StandardResponse.create(res).setResponse({
       message: "Sell history deleted successfully",
