@@ -4,6 +4,7 @@ import { injectable } from "inversify";
 import asyncWrap from "../common/asyncWrapper";
 import container from "@/container";
 import { StockAssetController } from "./stock-asset-controller";
+import { SUPERADMIN } from "../common/const/role-constants";
 
 @injectable()
 export class StockAssetRoutes { 
@@ -14,14 +15,14 @@ export class StockAssetRoutes {
   public setRoutes(router: Router) {
     router.get(
       `${this.routes}/commodities/:commodityId`,
-      // this.AuthMiddleware.authenticate,
-      // this.AuthMiddleware.roleAuthorize([SUPERADMIN, ADMIN]),
+      this.AuthMiddleware.authenticate,
+      this.AuthMiddleware.roleAuthorize([SUPERADMIN]),
       asyncWrap(this.controller.findAllByCommodity)
     )
     router.get(
       this.routes,
-      // this.AuthMiddleware.authenticate,
-      // this.AuthMiddleware.roleAuthorize([SUPERADMIN, ADMIN]),
+      this.AuthMiddleware.authenticate,
+      this.AuthMiddleware.roleAuthorize([SUPERADMIN]),
       asyncWrap(this.controller.findAll)
     )
   }

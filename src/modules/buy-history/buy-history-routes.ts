@@ -21,20 +21,20 @@ export class BuyHistoryRoutes {
     )
     router.get(
       `${this.routes}/commodity/:commodityId`,
-      // this.AuthMiddleware.authenticate,
-      // this.AuthMiddleware.roleAuthorize([SUPERADMIN, ADMIN]),
+      this.AuthMiddleware.authenticate,
+      this.AuthMiddleware.roleAuthorize([SUPERADMIN]),
       asyncWrap(this.controller.findHistoryByCommodity)
     )
     router.get(
       `${this.routes}/:id`,
-      // this.AuthMiddleware.authenticate,
-      // this.AuthMiddleware.roleAuthorize([SUPERADMIN, ADMIN]),
+      this.AuthMiddleware.authenticate,
+      this.AuthMiddleware.roleAuthorize([SUPERADMIN]),
       asyncWrap(this.controller.findOne)
     )
     router.get(
       this.routes,
-      // this.AuthMiddleware.authenticate,
-      // this.AuthMiddleware.roleAuthorize([SUPERADMIN, ADMIN]),
+      this.AuthMiddleware.authenticate,
+      this.AuthMiddleware.roleAuthorize([SUPERADMIN]),
       asyncWrap(this.controller.findAll)
     )
     router.put(
