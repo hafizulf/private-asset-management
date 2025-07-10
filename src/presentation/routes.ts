@@ -13,11 +13,13 @@ import { BuyHistoryRoutes } from "@/modules/buy-history/buy-history-routes";
 import { CommodityRoutes } from "@/modules/commodity/commodity-routes";
 import { SellHistoryRoutes } from "@/modules/sell-history/sell-history-routes";
 import { StockAssetRoutes } from "@/modules/stock-assets/stock-asset-routes";
+import { AuditLogsRoutes } from "@/modules/audit-logs/audit-logs-routes";
 
 @injectable()
 export class Routes {
   constructor(
     private announcementRoutes: AnnouncementRoutes,
+    private auditLogsRoutes: AuditLogsRoutes,
     private buyHistoryRoutes: BuyHistoryRoutes,
     private commodityRoutes: CommodityRoutes,
     private menuPermissionRoutes: MenuPermissionRoutes,
@@ -34,6 +36,7 @@ export class Routes {
 
   public setRoutes(router: Router) {
     this.announcementRoutes.setRoutes(router);
+    this.auditLogsRoutes.setRoutes(router);
     this.buyHistoryRoutes.setRoutes(router);
     this.commodityRoutes.setRoutes(router);
     this.menuPermissionRoutes.setRoutes(router);

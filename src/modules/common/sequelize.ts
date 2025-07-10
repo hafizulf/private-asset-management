@@ -78,6 +78,9 @@ Commodity.hasMany(StockAsset, { foreignKey: "commodityId" });
 SellHistory.belongsTo(Commodity, { foreignKey: "commodityId" });
 Commodity.hasMany(SellHistory, { foreignKey: "commodityId" });
 
+AuditLogs.belongsTo(User, { foreignKey: "userId" });
+User.hasMany(AuditLogs, { foreignKey: "userId" });
+
 export {
   Role,
   User,

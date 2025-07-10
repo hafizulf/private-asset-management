@@ -47,7 +47,7 @@ AuditLogs.init({
     allowNull: false,
   },
   payload: {
-    type: DataTypes.JSON,
+    type: DataTypes.JSONB,
     allowNull: false,
   },
   createdAt: {

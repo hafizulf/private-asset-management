@@ -1,6 +1,5 @@
-import { BaseQueryOption } from "../common/dto/common-dto";
+import BaseRepository from "../common/interfaces/base-repository-interface";
 import { AuditLogsDomain, IAuditLogs } from "./audit-logs-domain";
 
-export interface IAuditLogsRepository {
-  store(props: IAuditLogs, option?: BaseQueryOption): Promise<AuditLogsDomain>,
+export interface IAuditLogsRepository extends BaseRepository<AuditLogsDomain, IAuditLogs> {
 }
