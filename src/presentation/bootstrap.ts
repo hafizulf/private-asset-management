@@ -13,7 +13,6 @@ import { logger } from "@/libs/logger";
 import path from "path";
 import rateLimit from "express-rate-limit";
 import { Routes } from "@/presentation/routes";
-// import { RedisClient } from "@/libs/redis/redis-client";
 import { sequelizeMigrate } from "@/modules/common/sequelize";
 import TYPES from "@/types";
 
@@ -26,22 +25,15 @@ export class Bootstrap {
     @inject(Routes) private appRoutes: Routes, // inject routes by class
     @inject(TYPES.BackgroundServiceManager) private backgroundServiceManager: BackgroundServiceManager, // inject by symbol
     // @inject(TYPES.SocketIO) private socketIO: SocketIO,
-    // @inject(Mqtt) private mqtt: Mqtt,
   ) {
     this.app = express();
     this.httpServer = createServer(this.app);
-    // this.initializeRedis();     // initialize redis
     this.middleware();          // apply middleware
     this.setRoutes();           // set routes
     this.middlewareError();     // error handler
     this.initializeDatabase();
     this.initializeBackgroundServices();  // initialize background services
   }
-
-  // private initializeRedis(): void {
-  //   RedisClient.getInstance();
-  //   console.log('Redis client initialized');
-  // }
 
   private middleware(): void {
     const apiRateLimiter = rateLimit({
