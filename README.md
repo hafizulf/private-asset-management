@@ -1,159 +1,137 @@
-# TypeScript Express.js API Boilerplate
+# Private Assets Management System
 
 ## Overview
 
-This is a TypeScript Express.js API Boilerplate built with modern technologies to deliver a scalable, real-time API with efficient caching and communication capabilities.
+**Private Assets Management System (PAMS)** is a backend service built with **TypeScript** and **Express.js**.  
+It provides a modular and scalable solution for managing private assets, transactions, and user access.  
+
+The system follows **Domain-Driven Design (DDD)** principles with clear boundaries between domains (users, roles, assets, histories, etc.), and includes robust **authentication, auditing, and permission control** features.
 
 ## Technologies Used
 
-- **TypeScript**: Provides static typing for enhanced code reliability and maintainability.
-- **Express.js**: A minimalist web framework for Node.js to build RESTful APIs.
-- **Node.js 20**: The runtime environment for executing JavaScript on the server.
-- **Socket.IO**: Enables real-time, bidirectional communication between clients and the server.
-- **Redis**: An in-memory data store used for caching.
+- **TypeScript** – Type-safe, maintainable code.  
+- **Express.js** – Lightweight web framework for building APIs.  
+- **Node.js 20** – Modern runtime environment.  
+- **PostgreSQL** – Relational database for persistence.  
+- **Sequelize** – ORM for structured queries and migrations.  
+- **Docker** – Containerized setup for database and runtime services.  
 
 ## Features
 
-- RESTful API endpoints for seamless client-server communication.
-- Comprehensive user, role, access, and permission management system.
-- Support for future real-time backend features using Socket.IO.
-- Type-safe codebase with TypeScript for robust development.
+- **Authentication & Tokens** – Secure login, JWT, and refresh token handling.  
+- **User & Role Management** – Create and assign roles, permissions, and access levels.  
+- **Audit Logs** – Track user and system activities.  
+- **Announcements** – Manage and publish system-wide announcements.  
+- **Asset Management** – Modules for stock assets, commodities, and transaction histories.  
+- **Buy/Sell History** – Record and track asset transactions.  
+- **Dashboard Metrics** – Aggregated totals for system overview.  
+- **Validation & Error Handling** – Centralized schema validation and consistent exception handling.  
 
 ## Prerequisites
 
-- Node.js 20.x
-- Redis server
-- npm or yarn
+- Node.js 20.x  
+- PostgreSQL 15+  
+- Yarn or npm  
 
 ## Installation
 
 1. Clone the repository:
 
-   ```bash
+    ```bash
    git clone <repository-url>
    cd <repository-folder>
    ```
 
 2. Install dependencies:
 
+    ```bash
+   yarn install
+   ```
+
+3. Configure environment variables:  
+
+   Create a `.env` file in the project root and provide values:
+
    ```bash
-   yarn install --frozen-lockfile
-   ```
-
-   > **Important:**  
-   > Using `--frozen-lockfile` ensures that dependencies are installed exactly as specified in the `yarn.lock` file, preventing unexpected changes.  
-   > 
-   > If you intentionally want to apply updates or allow breaking changes (e.g., updating versions), you can skip the flag and run:
-   > 
-   > ```bash
-   > yarn install
-   > ```
-   > 
-   > _(Be careful: skipping `--frozen-lockfile` may modify your `yarn.lock` and update packages.)_
-
-3. Set up environment variables:
-
-   - Create a `.env` file in the root directory.
-   - Add necessary configurations (e.g., Redis connection, port, etc.):
-
-   ```env
    APP_PORT=3000
+   DB_HOST=localhost
+   DB_PORT=5432
    DB_USER=postgres
+   DB_PASS=your_password
+   DB_NAME=private_assets_db
    ```
 
-4. Start the Redis server (if not already running with docker):
+4. Start services (DB, etc.) with Docker:
 
    ```bash
    docker compose -f docker-compose-development.yaml up
    ```
 
-5. Copy & restore database starter:
-
-   ```bash
-   1. Copy
-   docker cp /path-to-file/dump-starter.tar postgres17:/db-backup/dummy-starter.tar
-
-   
-   2. Restore
-   docker exec -e PGPASSWORD=yourpg_pass -it postgres17 pg_restore --verbose --username=yourpg_user --dbname=typescript_expressjs_boilerplate --format=t /db-backup/dummy-starter.tar
-   ```
-
-6. Compile and run the application in development:
+5. Run the application in development:
 
    ```bash
    yarn dev
    ```
 
-## Socket Usage
-
-- dsadsa
-
-## Project Structure Overview
+## Project Structure
 
 ```plaintext
 .
-├── src/                      # Application source code
-│
-│   ├── config/               # Configuration files
-│   │   ├── cors.ts           # CORS setup
-│   │   ├── database.ts       # DB connection and ORM initialization
-│   │   └── env.ts            # Environment variable loader/parser
-│
-│   ├── container.ts          # Dependency injection container (IoC) setup
-│
-│   ├── exceptions/           # Global error handling
-│   │   ├── app-error.ts      # Custom base error class
-│   │   └── error-handler.ts  # Express error middleware
-│
-│   ├── helpers/              # Utility functions and shared logic
-│   │   └── schema-validator.ts  # Validation helpers (e.g., Zod)
-│
-│   ├── index.ts              # Application entry point (starts Express, loads DI)
-│
-│   ├── libs/                 # Infrastructure and low-level utilities
-│   │   ├── cron-job/         # Scheduled job definitions
-│   │   ├── exit-handler.ts   # Graceful shutdown logic
-│   │   ├── file-system.ts    # File handling utilities
-│   │   ├── formatters.ts     # Formatter utilities (dates, numbers)
-│   │   ├── logger.ts         # Logger configuration (e.g., Winston)
-│   │   ├── mqtt/             # MQTT messaging helpers
-│   │   ├── redis/            # Redis integration (cache/pubsub)
-│   │   ├── standard-response.ts  # Standardized API responses
-│   │   └── websocket/        # WebSocket server/handlers
-│
-│   ├── modules/              # Domain modules (DDD bounded contexts)
-│   │   ├── access-managements/  # Role/permission and ACL logic
-│   │   ├── announcements/       # Announcement domain
-│   │   ├── authentications/     # Auth handling (login, JWT)
-│   │   ├── common/              # Shared entities, interfaces, or use-cases
-│   │   ├── dashboard-totals/    # Dashboard-specific logic
-│   │   ├── refresh-tokens/      # Refresh token handling
-│   │   ├── roles/               # Role definitions and assignments
-│   │   ├── user-logs/           # User activity logging
-│   │   └── users/               # User logic
-│
-│   ├── presentation/         # Handles delivery layer 
-│   │   ├── bootstrap.ts      # Application bootstrap/init logic
-│   │   ├── middlewares/      # Express middlewares (auth, logging, etc.)
-│   │   ├── routes.ts         # Maps HTTP routes to module controllers
-│   │   └── server.ts         # Express app/server setup
-│
-│   └── types.ts              # Global/shared TypeScript types
-├── docker-compose.yaml       # Docker service definitions (e.g., DB, Redis)
-├── package.json              # Project metadata and npm scripts
-├── README.md                 # Project documentation
-├── tsconfig.json             # TypeScript compiler configuration
-├── yarn.lock                 # Yarn dependency lockfile
+├── package.json
+├── README.md
+├── src
+│   ├── config/                 # App configurations (CORS, DB, env)
+│   ├── container.ts            # Dependency injection container
+│   ├── exceptions/             # Custom errors and global error handlers
+│   ├── helpers/                # Utilities (validation helpers, etc.)
+│   ├── index.ts                # Application entry point
+│   ├── libs/                   # Infrastructure utilities
+│   │   ├── cron-job/           # Scheduled jobs
+│   │   ├── exit-handler.ts     # Graceful shutdown handling
+│   │   ├── file-system.ts      # File utilities
+│   │   ├── formatters.ts       # Data formatting helpers
+│   │   ├── logger.ts           # Logger setup
+│   │   └── standard-response.ts# Standard API responses
+│   ├── modules/                # Domain-driven modules
+│   │   ├── announcements       # System announcements
+│   │   ├── audit-logs          # Activity logging
+│   │   ├── authentications     # Authentication & validation
+│   │   ├── buy-history         # Purchase records
+│   │   ├── commodity           # Commodity management
+│   │   ├── common              # Shared DTOs, schemas, utilities
+│   │   ├── dashboard-totals    # Dashboard metrics
+│   │   ├── origins             # Origin management
+│   │   ├── refresh-tokens      # Refresh token lifecycle
+│   │   ├── roles               # Role & permission handling
+│   │   ├── sell-history        # Sell transaction records
+│   │   ├── stock-assets        # Stock asset management
+│   │   ├── user-logs           # User activity logs
+│   │   └── users               # User management
+│   ├── presentation/           # Delivery layer (Express server, routes, middlewares)
+│   └── types.ts                # Shared/global TS types
+├── tmp/                        # Temporary storage (e.g., avatars)
+│   └── user/avatars
+├── tsconfig.json               # TypeScript config
+└── yarn.lock                   # Dependency lockfile
 ```
+
+## Development Workflow
+
+- **Domain-Driven Design (DDD)** – Each module is a bounded context with its own domain, service, repository, and validation.  
+- **Service Layer** – Business logic handling.  
+- **Repository Layer** – Database operations with Sequelize.  
+- **Controller Layer** – Bridges HTTP requests to services.  
+- **Validation Layer** – Input validation with schema definitions.  
+- **Exception Handling** – Centralized via `exceptions/`.  
 
 ## Contributing
 
-1. Fork the repository.
-2. Create a feature branch (`git checkout -b feature/your-feature`).
-3. Commit your changes (`git commit -m 'Add your feature'`).
-4. Push to the branch (`git push origin feature/your-feature`).
-5. Open a pull request.
+1. Fork the repository.  
+2. Create a feature branch (`git checkout -b feature/your-feature`).  
+3. Commit your changes (`git commit -m 'Add new feature'`).  
+4. Push to your branch (`git push origin feature/your-feature`).  
+5. Open a pull request.  
 
 ## License
 
-This project is licensed under the MIT License.
+This project is licensed under the **MIT License**.
