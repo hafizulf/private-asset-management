@@ -1,13 +1,10 @@
 import { AppError, HttpCode } from "@/exceptions/app-error";
-import { IMenuPermission } from "../access-managements/menu-permissions/menu-permission-domain";
 import { injectable } from "inversify";
 import { IRoleRepository } from "./role-repository-interface";
 import { IRole, Role as RoleDomain } from "./role-domain";
 import { Op } from "sequelize";
 import { Pagination } from "../common/pagination";
 import { Role as RolePersistence } from "@/modules/common/sequelize";
-import { RoleMenuPermissionDomain } from "../access-managements/role-menu-permissions/role-menu-permission-domain";
-import { RoleMenuPermission as RoleMenuPermissionPersistence } from "@/modules/common/sequelize";
 import { sequelize } from "@/config/database";
 import { TStandardPaginateOption } from "../common/dto/pagination-dto";
 import { TPropsCreateRole } from "./role-dto";
@@ -47,7 +44,7 @@ export class RoleRepository implements IRoleRepository {
     return [rows.map((el) => RoleDomain.create(el.toJSON())), pagination];
   }
 
-  async store(props: TPropsCreateRole, menuPermissions: IMenuPermission[]): Promise<RoleDomain> {
+  async store(props: TPropsCreateRole): Promise<RoleDomain> {
     const isExistRole = await RolePersistence.findOne({ where: { name: props.name } });
     if(isExistRole) {
       throw new AppError({
@@ -60,19 +57,7 @@ export class RoleRepository implements IRoleRepository {
     try {
       const { updatedBy, ...roleData } = props;
       const role = RoleDomain.create(roleData);
-      const createdRole = await RolePersistence.create(role.unmarshal(), { transaction });
-
-      for(const mp of menuPermissions) {
-        const roleMenuPermission = RoleMenuPermissionDomain.create({
-          roleId: createdRole.id,
-          menuId: mp.menuId,
-          permissionId: mp.permissionId,
-          isPermitted: false,
-          updatedBy: updatedBy,
-        })
-
-        await RoleMenuPermissionPersistence.create(roleMenuPermission.unmarshal(), { transaction });
-      }
+      await RolePersistence.create(role.unmarshal(), { transaction });
 
       await transaction.commit();
       return role;

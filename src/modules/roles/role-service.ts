@@ -1,6 +1,4 @@
 import { inject, injectable } from "inversify";
-import { IMenuPermission } from "../access-managements/menu-permissions/menu-permission-domain";
-import { IMenuPermissionRepository } from "../access-managements/menu-permissions/menu-permission-repository-interface";
 import { IRoleRepository } from "./role-repository-interface";
 import { IRole } from "./role-domain";
 import { Pagination } from "@/modules/common/pagination";
@@ -12,7 +10,6 @@ import { TPropsCreateRole } from "./role-dto";
 export class RoleService {
   constructor(
     @inject(TYPES.IRoleRepository) private _repository: IRoleRepository,
-    @inject(TYPES.IMenuPermissionRepository) private _menuPermissionRepository: IMenuPermissionRepository,
   ) {}
 
   public async findAll(
@@ -34,9 +31,7 @@ export class RoleService {
   }
 
   public async store(props: TPropsCreateRole): Promise<IRole> {
-    const menuPermissions: IMenuPermission[] = (await (this._menuPermissionRepository.findAll())).map((el) => el.unmarshal());
-
-    return (await this._repository.store(props, menuPermissions)).unmarshal();
+    return (await this._repository.store(props)).unmarshal();
   }
 
   public async findById(id: string): Promise<IRole> {
