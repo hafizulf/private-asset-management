@@ -15,7 +15,7 @@ if (fs.existsSync(defaultEnvPath)) {
 
 const requiredEnvVars = ['APP_ENV', 'APP_HOST', 'APP_PORT', 'APP_API_PREFIX', 'DB_USER', 'DB_PASSWORD', 'DB_NAME', 'DB_HOST', 'DB_PORT', 'DB_DIALECT', 'JWT_SECRET_KEY', 'JWT_REFRESH_SECRET_KEY', 'JWT_SECRET_TTL', 'JWT_REFRESH_SECRET_TTL'];
 
-const optionalEnvVars = ['MQTT_USERNAME', 'MQTT_PASSWORD'];
+const optionalEnvVars: string [] = [];
 
 requiredEnvVars.forEach((key) => {
   if (!process.env[key]) {
