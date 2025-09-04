@@ -26,7 +26,7 @@ class ErrorHandler {
     response.status(error.statusCode).json({
       statusCode: error.statusCode,
       message: error.message,
-      data: error.data,
+      errors: error.errors,
       e: error.error,
     });
   }

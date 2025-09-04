@@ -116,7 +116,7 @@ export class UserService {
       throw new AppError({
         statusCode: HttpCode.INTERNAL_SERVER_ERROR,
         description: "An error occurred while updating the user.",
-        data: error.message,
+        error: error.message,
       });
     }
   }

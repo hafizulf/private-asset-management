@@ -18,7 +18,7 @@ interface AppErrorArgs {
   statusCode: HttpCode;
   description: string;
   name?: string;
-  data?: any;
+  errors?: any;
   error?: any;
   isOperational?: boolean;
 }
@@ -27,7 +27,7 @@ export class AppError extends Error {
   public readonly name: string;
   public readonly statusCode: HttpCode;
   public readonly isOperational: boolean = true;
-  public readonly data?: any;
+  public readonly errors?: any;
   public readonly error?: any;
 
   constructor(args: AppErrorArgs) {
@@ -37,7 +37,7 @@ export class AppError extends Error {
 
     this.name = args.name || "Error";
     this.statusCode = args.statusCode;
-    this.data = args.data;
+    this.errors = args.errors;
     this.error = APP_ENV !== "production" ? args.error : "";
     if (args.isOperational !== undefined) {
       this.isOperational = args.isOperational;
@@ -72,7 +72,7 @@ export class AppError extends Error {
     return new AppError({
       statusCode: HttpCode.VALIDATION_ERROR,
       description,
-      data: detailedErrors,
+      errors: detailedErrors,
       isOperational: true,
     });
   }
