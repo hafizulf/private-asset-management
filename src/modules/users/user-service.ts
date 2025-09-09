@@ -35,10 +35,21 @@ export class UserService {
         limit: <number>paginateOption.limit,
       })
       const [data, paginateResult] = await this._repository.findAllWithPagination(paginateOption, pagination);
-      return [data.map((el) => el.unmarshal()), paginateResult];
+      console.log(data);
+      return [this._transformUsers(data), paginateResult];
     }
 
-    return [(await this._repository.findAll()).map((el) => el.unmarshal())];
+    return [this._transformUsers(await this._repository.findAll())];
+  }
+
+  private _transformUsers = (users: UserDomain[]) => {
+    return users.map((el) => {
+      const { password, role, tokenVersion, ...restData } = el.unmarshal();
+      return {
+        roleName: role?.name,
+        ...restData,
+      }
+    });
   }
 
   public async store(props: IUser): Promise<Omit<IUser, "password">> {

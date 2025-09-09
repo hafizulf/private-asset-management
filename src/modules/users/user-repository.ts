@@ -14,7 +14,18 @@ import { RoleErrMessage, UserErrMessage } from "@/exceptions/error-message-const
 @injectable()
 export class UserRepository implements IUserRepository {
   async findAll(): Promise<UserDomain[]> {
-    const users = await UserPersistence.findAll();
+    const users = await UserPersistence.findAll({
+      attributes: {
+        exclude: ["password"],
+      },
+      include: [
+        {
+          model: RolePersistence,
+          attributes: ["name"],
+        }
+      ],
+      order: [["createdAt", "DESC"]],
+    });
     return users.map((el) => UserDomain.create(el.toJSON()));
   }
 
