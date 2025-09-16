@@ -15,7 +15,15 @@ import { BaseQueryOption } from "../common/dto/common-dto";
 @injectable()
 export class BuyHistoryRepository implements IBuyHistoryRepository {
   findAll = async (): Promise<BuyHistoryDomain[]> => {
-    const data = await BuyHistoryPersistence.findAll();
+    const data = await BuyHistoryPersistence.findAll({
+      include: [
+        {
+          model: CommodityPersistence, 
+          attributes: ["name", "unit"],
+        },
+      ],
+      order: [["createdAt", "DESC"]],
+    });
     return data.map((el) => BuyHistoryDomain.create(el.toJSON()));
   }
 
