@@ -49,6 +49,16 @@ export class CommodityController {
       .send();
   }
 
+  public findAllActive = async (_req: Request, res: Response): Promise<Response> => {
+    const data = await this._service.findAllActive();
+
+    return StandardResponse.create(res).setResponse({
+      message: "Commodities active fetched successfully",
+      status: HttpCode.OK,
+      data,
+    }).send();
+  }
+
   public update = async (req: Request, res: Response): Promise<Response> => {
     const validatedReq = validateSchema(updateCommoditySchema, {
       ...req.params,

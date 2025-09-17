@@ -20,6 +20,12 @@ export class CommodityRoutes {
       asyncWrap(this.controller.store)
     )
     router.get(
+      `${this.routes}/active`,
+      this.AuthMiddleware.authenticate,
+      this.AuthMiddleware.roleAuthorize([SUPERADMIN]),
+      asyncWrap(this.controller.findAllActive)
+    )
+    router.get(
       `${this.routes}/:id`,
       this.AuthMiddleware.authenticate,
       this.AuthMiddleware.roleAuthorize([SUPERADMIN]),

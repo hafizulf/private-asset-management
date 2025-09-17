@@ -43,6 +43,15 @@ export class CommodityRepository implements ICommodityRepository {
     return [rows.map((el) => CommodityDomain.create(el.toJSON())), pagination];
   }
 
+  findAllActive = async (): Promise<CommodityDomain[]> => {
+    const data = await CommodityPersistence.findAll({
+      where: {
+        isActive: true
+      }
+    });
+    return data.map((el) => CommodityDomain.create(el.toJSON()));
+  }
+
   store = async (props: ICommodity): Promise<CommodityDomain> => {
     const isExist = await CommodityPersistence.findOne({
       where: {

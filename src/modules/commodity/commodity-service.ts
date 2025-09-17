@@ -40,6 +40,10 @@ export class CommodityService {
     return [(await this._repository.findAll()).map((el) => el.unmarshal()), undefined];
   }
 
+  public findAllActive = async(): Promise<ICommodity[]> => {
+    return (await this._repository.findAllActive()).map((el) => el.unmarshal());
+  }
+
   public update = async (id: string, props: ICommodity): Promise<ICommodity> => {
     return (await this._repository.update(id, props)).unmarshal();
   }
