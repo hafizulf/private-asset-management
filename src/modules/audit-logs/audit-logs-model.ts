@@ -15,7 +15,7 @@ export class AuditLogs extends Model <
   declare user: NonAttribute<User>;
   declare type: "buy" | "sell";
   declare action: string;
-  declare payload: IBuyHistory | ISellHistory;
+  declare payload: { before?: IBuyHistory | ISellHistory; after: IBuyHistory | ISellHistory };
   declare createdAt: CreationOptional<Date>;
   declare deletedAt: CreationOptional<Date>;
 

@@ -10,7 +10,10 @@ export interface IAuditLogs {
   user?: IUser;
   type: "buy" | "sell";
   action: string;
-  payload: IBuyHistory | ISellHistory;
+  payload: {
+    before?: IBuyHistory | ISellHistory;
+    after: IBuyHistory | ISellHistory;
+  }
   createdAt?: Date;
   deletedAt?: Date;
 }
@@ -60,7 +63,7 @@ export class AuditLogsDomain
     return this.props.action;
   }
 
-  get payload(): IBuyHistory | ISellHistory {
+  get payload(): { before?: IBuyHistory | ISellHistory; after: IBuyHistory | ISellHistory } {
     return this.props.payload;
   }
 

@@ -53,7 +53,7 @@ export class SellHistoryService {
           userId,
           type: "sell",
           action: "create",
-          payload: storedSellHistory,
+          payload: { after: storedSellHistory },
         }, { transaction });
 
         return storedSellHistory;
@@ -168,12 +168,13 @@ export class SellHistoryService {
         }
 
         await this._stockAssetRepository.update(dataStockAsset.id,  { qty }, { transaction });
+        const dataBefore = await this._repository.findById(id);
         const updatedSellHistory = (await this._repository.update(id, props, { transaction })).unmarshal();
         await this._auditLogsRepository.store({
           userId,
           type: "sell",
           action: "update",
-          payload: updatedSellHistory,
+          payload: { before: dataBefore, after: updatedSellHistory },
         }, { transaction });
 
         return updatedSellHistory;
@@ -196,7 +197,7 @@ export class SellHistoryService {
           userId,
           type: "sell",
           action: "delete",
-          payload: data.unmarshal(),
+          payload: { after: data.unmarshal() },
         }, { transaction });
         return (await this._repository.delete(id, { transaction }));
       },
