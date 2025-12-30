@@ -2,8 +2,8 @@ import { inject, injectable } from "inversify";
 import { CronJob } from "cron";
 import TYPES from "@/types";
 import { RefreshTokenService } from "@/modules/refresh-tokens/refresh-token-service";
-import { DashboardTotalService } from "@/modules/dashboard-totals/dashboard-total-service";
 import { UserLogsService } from "@/modules/user-logs/user-logs-service";
+import { BackUpService } from "@/modules/back-up/back-up.service";
 
 interface CronJobOptions {
   onComplete?: () => void;
@@ -16,12 +16,9 @@ export class Cron {
   private _jobs: Record<string, CronJob> = {};
 
   constructor(
-    @inject(TYPES.RefreshTokenService)
-    private _refreshTokenService: RefreshTokenService,
-    @inject(TYPES.DashboardTotalService)
-    private _dashboardTotalService: DashboardTotalService,
-    @inject(TYPES.UserLogsService)
-    private _userLogsService: UserLogsService,
+    @inject(TYPES.RefreshTokenService) private _refreshTokenService: RefreshTokenService,
+    @inject(TYPES.UserLogsService) private _userLogsService: UserLogsService,
+    @inject(TYPES.BackUpService) private _backupService: BackUpService,
   ) {
     this._addJob(
       'deleteExpiredTokens',
@@ -29,15 +26,6 @@ export class Cron {
       async () => {
         console.log("Running deleteExpiredTokens job at:", new Date().toLocaleString("en-US", { timeZone: "Asia/Jakarta" }));
         await this._refreshTokenService.deleteExpiredTokens();
-      }
-    )
-
-    this._addJob(
-      'insertDashboardTotal',
-      '0 * * * *',
-      async () => {
-        console.log("Running insertDashboardTotal job at:", new Date().toLocaleString("en-US", { timeZone: "Asia/Jakarta" }));
-        await this._dashboardTotalService.insertDashboardTotal();
       }
     )
 
@@ -52,9 +40,12 @@ export class Cron {
 
     // add another cron job
     this._addJob(
-      'anotherJob',
-      '* * * * *',
-      () => console.log('Running another job at:', new Date().toLocaleString("en-US", { timeZone: "Asia/Jakarta" }))
+      'backupDatabase',
+      '0 0 * * *',
+      async () => {
+        console.log('Running another job at:', new Date().toLocaleString("en-US", { timeZone: "Asia/Jakarta" }))
+        await this._backupService.backUpFullDatabaseToGDrive();
+      }
     )
   }
 

@@ -1,11 +1,10 @@
-import { injectable } from "inversify";
-// import { inject, injectable } from "inversify";
-// import { Cron } from "@/libs/cron-job/cron";
+import { inject, injectable } from "inversify";
+import { Cron } from "@/libs/cron-job/cron";
 
 @injectable()
 export class BackgroundServiceManager {
   constructor(
-    // @inject(Cron) private cronJobs: Cron,
+    @inject(Cron) private cronJobs: Cron,
   ) {}
 
   async startServices(): Promise<void> {
@@ -14,9 +13,7 @@ export class BackgroundServiceManager {
   }
 
   private initializeCronJobs(): void {
-    // this.cronJobs.start('deleteExpiredTokens');
-    // this.cronJobs.start('insertDashboardTotal');
-    // this.cronJobs.start('deleteUserLogs');
+    this.cronJobs.start('backupDatabase');
 
     console.log('Background cron jobs initialized.');
   }

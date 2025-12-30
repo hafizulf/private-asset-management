@@ -11,6 +11,7 @@ const TYPES = {
   AnnouncementService: Symbol.for("AnnouncementService"),
   AuditLogsService: Symbol.for("AuditLogsService"),
   BackgroundServiceManager: Symbol.for("BackgroundServiceManager"),
+  BackUpService: Symbol.for("BackUpService"),
   BuyHistoryService: Symbol.for("BuyHistoryService"),
   CommodityService: Symbol.for("CommodityService"),
   DashboardTotalService: Symbol.for("DashboardTotalService"),

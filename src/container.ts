@@ -19,6 +19,7 @@ import { CommodityRoutes } from "@/modules/commodity/commodity-routes";
 import { SellHistoryRoutes } from "@/modules/sell-history/sell-history-routes";
 import { StockAssetRoutes } from "@/modules/stock-assets/stock-asset-routes";
 import { AuditLogsRoutes } from "@/modules/audit-logs/audit-logs-routes";
+import { BackUpRoutes } from "@/modules/back-up/back-up.routes";
 
 // Import Middlewares
 import { AuthMiddleware } from "@/presentation/middlewares/auth-middleware";
@@ -34,6 +35,7 @@ import { CommodityController } from "@/modules/commodity/commodity-controller";
 import { SellHistoryController } from "@/modules/sell-history/sell-history-controller";
 import { StockAssetController } from "@/modules/stock-assets/stock-asset-controller";
 import { AuditLogsController } from "@/modules/audit-logs/audit-logs-controller";
+import { BackUpController } from "@/modules/back-up/back-up.controller";
 
 // Import Services
 import { BackgroundServiceManager } from "./modules/common/services/background-service-manager";
@@ -51,6 +53,7 @@ import { CommodityService } from "@/modules/commodity/commodity-service";
 import { SellHistoryService } from "@/modules/sell-history/sell-history-service";
 import { StockAssetService } from "@/modules/stock-assets/stock-asset-service";
 import { AuditLogsService } from "@/modules/audit-logs/audit-logs-service";
+import { BackUpService } from "./modules/back-up/back-up.service";
 
 // Import Interface Repository
 import { IRoleRepository } from "@/modules/roles/role-repository-interface";
@@ -100,6 +103,7 @@ container.bind<CommodityRoutes>(CommodityRoutes).toSelf().inSingletonScope();
 container.bind<SellHistoryRoutes>(SellHistoryRoutes).toSelf().inSingletonScope();
 container.bind<StockAssetRoutes>(StockAssetRoutes).toSelf().inSingletonScope();
 container.bind<AuditLogsRoutes>(AuditLogsRoutes).toSelf().inSingletonScope();
+container.bind<BackUpRoutes>(BackUpRoutes).toSelf().inSingletonScope();
 
 // Middleware
 container.bind(AuthMiddleware).toSelf();
@@ -115,6 +119,7 @@ container.bind(CommodityController).toSelf();
 container.bind(SellHistoryController).toSelf();
 container.bind(StockAssetController).toSelf();
 container.bind(AuditLogsController).toSelf();
+container.bind(BackUpController).toSelf();
 
 // Services
 container.bind<BackgroundServiceManager>(TYPES.BackgroundServiceManager).to(BackgroundServiceManager);
@@ -132,6 +137,7 @@ container.bind(TYPES.CommodityService).to(CommodityService);
 container.bind(TYPES.SellHistoryService).to(SellHistoryService);
 container.bind(TYPES.StockAssetService).to(StockAssetService);
 container.bind(TYPES.AuditLogsService).to(AuditLogsService);
+container.bind(TYPES.BackUpService).to(BackUpService);
 
 // Repository
 container
