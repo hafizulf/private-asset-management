@@ -3,8 +3,8 @@ import { paginatedSchema } from "../common/validation/pagination-schema";
 import { uuidV7RegexSchema } from "../common/validation/uuid-schema";
 
 export const createCommoditySchema = z.object({
-  name: z.string(),
-  unit: z.string(),
+  name: z.string().min(3, "Name must be at least 3 characters long"),
+  unit: z.string().min(1, "Unit must be at least 1 characters long"),
   isActive: z.boolean(),
 });
 
