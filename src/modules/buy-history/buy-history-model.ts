@@ -43,11 +43,11 @@ BuyHistory.init({
     allowNull: false,
   },
   qty: {
-    type: DataTypes.FLOAT,
+    type: DataTypes.DECIMAL(10, 2),
     allowNull: false,
   },
   totalPrice: {
-    type: DataTypes.FLOAT,
+    type: DataTypes.DECIMAL(15, 2),
     allowNull: false,
   },
   memo: {

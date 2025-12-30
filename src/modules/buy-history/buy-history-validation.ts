@@ -19,8 +19,20 @@ export const createBuyHistorySchema = z.object({
       const parsed = dayjs(val, format, true);
       return parsed.tz("Asia/Jakarta").toDate();
     }),
-  qty: z.number().min(1),
-  totalPrice: z.number().min(1),
+  qty: z
+  .number()
+  .gt(0)
+  .refine(
+    v => Number.isInteger(v * 100),
+    { message: 'Max 2 decimal places allowed' }
+  ),
+  totalPrice: z
+  .number()
+  .gt(0)
+  .refine(
+    v => Number.isInteger(v * 100),
+    { message: 'Max 2 decimal places allowed' }
+  ),
   memo: z.string().optional(),
 });
 
