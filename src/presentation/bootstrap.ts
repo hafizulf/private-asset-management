@@ -37,7 +37,7 @@ export class Bootstrap {
 
   private middleware(): void {
     const apiRateLimiter = rateLimit({
-      windowMs: 15 * 60 * 1000,     // 15 minutes
+      windowMs: 60 * 60 * 10000,
       max: 100,                     // limit each IP to 100 requests per windowMs
       message: {
         status: 429,

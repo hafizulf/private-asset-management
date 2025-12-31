@@ -89,6 +89,22 @@ export class CommodityRepository implements ICommodityRepository {
         description: CommodityErrMessage.NOT_FOUND,
       })
     }
+
+    const duplicate = await CommodityPersistence.findOne({
+      where: {
+        name: props.name,
+        unit: props.unit,
+        id: { [Op.ne]: id },
+      },
+    });
+
+    if (duplicate) {
+      throw new AppError({
+        statusCode: HttpCode.CONFLICT,
+        description: CommodityErrMessage.ALREADY_EXISTS,
+      });
+    }
+
     const updatedCommodity = await data.update(props);
     return CommodityDomain.create(updatedCommodity.toJSON());
   }
