@@ -3,7 +3,8 @@ import { CronJob } from "cron";
 import TYPES from "@/types";
 import { RefreshTokenService } from "@/modules/refresh-tokens/refresh-token-service";
 import { UserLogsService } from "@/modules/user-logs/user-logs-service";
-// import { BackUpService } from "@/modules/back-up/back-up.service";
+import { BackUpService } from "@/modules/back-up/back-up.service";
+import { JOB_KEYS } from "./cron-constants";
 
 interface CronJobOptions {
   onComplete?: () => void;
@@ -18,10 +19,10 @@ export class Cron {
   constructor(
     @inject(TYPES.RefreshTokenService) private _refreshTokenService: RefreshTokenService,
     @inject(TYPES.UserLogsService) private _userLogsService: UserLogsService,
-    // @inject(TYPES.BackUpService) private _backupService: BackUpService,
+    @inject(TYPES.BackUpService) private _backupService: BackUpService,
   ) {
     this._addJob(
-      'deleteExpiredTokens',
+      JOB_KEYS.DELETE_EXPIRED_TOKENS,
       '0 0 * * *', // every day at midnight
       async () => {
         console.log("Running deleteExpiredTokens job at:", new Date().toLocaleString("en-US", { timeZone: "Asia/Jakarta" }));
@@ -30,7 +31,7 @@ export class Cron {
     )
 
     this._addJob(
-      'deleteUserLogs',
+      JOB_KEYS.DELETE_USER_LOGS,
       '0 0 * * *',
       async () => {
         console.log("Running deleteUserLogs job at:", new Date().toLocaleString("en-US", { timeZone: "Asia/Jakarta" }));
@@ -39,14 +40,14 @@ export class Cron {
     )
 
     // add another cron job
-    // this._addJob(
-    //   'backupDatabase',
-    //   '0 0 * * *',
-    //   async () => {
-    //     console.log('Running another job at:', new Date().toLocaleString("en-US", { timeZone: "Asia/Jakarta" }))
-    //     await this._backupService.backUpFullDatabaseToGDrive();
-    //   }
-    // )
+    this._addJob(
+      JOB_KEYS.UPLOAD_DB_TO_GDRIVE,
+      '0 2 * * *',
+      async () => {
+        console.log('Running another job at:', new Date().toLocaleString("en-US", { timeZone: "Asia/Jakarta" }))
+        await this._backupService.backupAndUpload(process.env.DRIVE_FOLDER_ID!);
+      }
+    )
   }
 
   private _addJob(

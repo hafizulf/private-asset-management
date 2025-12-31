@@ -4,72 +4,50 @@ import { injectable } from "inversify";
 import path from "path";
 import fs from 'fs';
 import { drive_v3, google } from 'googleapis';
-import readline from 'readline';
+import { OAuth2Client } from "google-auth-library";
 
 @injectable()
 export class BackUpService {
-  private SCOPES = ['https://www.googleapis.com/auth/drive.file'];
-  private TOKEN_PATH = path.join(__dirname, '../../../token.json');
-  private CREDENTIALS_PATH = path.join(__dirname, '../../../oauth-client.json');
+  private CREDENTIALS_PATH: string;
+  private TOKEN_PATH: string;
 
-  constructor() {}
+  constructor() {
+    const PROJECT_ROOT = path.resolve(__dirname, '../../..');
+    this.CREDENTIALS_PATH = path.join(PROJECT_ROOT, 'oauth-client.json');
+    this.TOKEN_PATH= path.join(PROJECT_ROOT, 'token.json');
+  }
 
-  private async authorize() {
+  private authorizeRuntime(): OAuth2Client {
+    if (!fs.existsSync(this.CREDENTIALS_PATH)) {
+      throw new Error('Missing oauth-client.json');
+    }
+
+    if (!fs.existsSync(this.TOKEN_PATH)) {
+      throw new Error(
+        'Missing token.json. Run OAuth bootstrap script first.'
+      );
+    }
+
     const credentials = JSON.parse(
       fs.readFileSync(this.CREDENTIALS_PATH, 'utf8')
     );
 
     if (!credentials.installed) {
       throw new Error(
-        'Invalid OAuth client: expected Desktop App credentials (installed)'
+        'Invalid OAuth client: expected Desktop App credentials'
       );
     }
 
-    const {
-      client_id,
-      client_secret,
-      redirect_uris,
-    } = credentials.installed;
-
-    if (!redirect_uris || redirect_uris.length === 0) {
-      throw new Error('Desktop OAuth client has no redirect_uris');
-    }
+    const { client_id, client_secret } = credentials.installed;
 
     const oAuth2Client = new google.auth.OAuth2(
       client_id,
-      client_secret,
-      redirect_uris[0]
+      client_secret
     );
 
-    if (fs.existsSync(this.TOKEN_PATH)) {
-      oAuth2Client.setCredentials(
-        JSON.parse(fs.readFileSync(this.TOKEN_PATH, 'utf8'))
-      );
-      return oAuth2Client;
-    }
-
-    const authUrl = oAuth2Client.generateAuthUrl({
-      access_type: 'offline',
-      scope: this.SCOPES,
-    });
-
-    console.log('Authorize this app by visiting this URL:', authUrl);
-
-    const rl = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout,
-    });
-
-    const code = await new Promise<string>((resolve) => {
-      rl.question('Enter the code here: ', (c) => {
-        rl.close();
-        resolve(c);
-      });
-    });
-
-    const { tokens } = await oAuth2Client.getToken(code);
-    oAuth2Client.setCredentials(tokens);
-    fs.writeFileSync(this.TOKEN_PATH, JSON.stringify(tokens));
+    oAuth2Client.setCredentials(
+      JSON.parse(fs.readFileSync(this.TOKEN_PATH, 'utf8'))
+    );
 
     return oAuth2Client;
   }
@@ -98,7 +76,7 @@ export class BackUpService {
   }
 
   public async uploadToGDrive(localFilePath: string, folderId: string): Promise<drive_v3.Schema$File> {
-    const auth = await this.authorize();
+    const auth = this.authorizeRuntime();
     const drive = google.drive({ version: 'v3', auth });
 
     const fileMetadata = {
