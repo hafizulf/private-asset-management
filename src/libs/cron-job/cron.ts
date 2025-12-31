@@ -3,7 +3,7 @@ import { CronJob } from "cron";
 import TYPES from "@/types";
 import { RefreshTokenService } from "@/modules/refresh-tokens/refresh-token-service";
 import { UserLogsService } from "@/modules/user-logs/user-logs-service";
-import { BackUpService } from "@/modules/back-up/back-up.service";
+// import { BackUpService } from "@/modules/back-up/back-up.service";
 
 interface CronJobOptions {
   onComplete?: () => void;
@@ -18,7 +18,7 @@ export class Cron {
   constructor(
     @inject(TYPES.RefreshTokenService) private _refreshTokenService: RefreshTokenService,
     @inject(TYPES.UserLogsService) private _userLogsService: UserLogsService,
-    @inject(TYPES.BackUpService) private _backupService: BackUpService,
+    // @inject(TYPES.BackUpService) private _backupService: BackUpService,
   ) {
     this._addJob(
       'deleteExpiredTokens',
@@ -39,14 +39,14 @@ export class Cron {
     )
 
     // add another cron job
-    this._addJob(
-      'backupDatabase',
-      '0 0 * * *',
-      async () => {
-        console.log('Running another job at:', new Date().toLocaleString("en-US", { timeZone: "Asia/Jakarta" }))
-        await this._backupService.backUpFullDatabaseToGDrive();
-      }
-    )
+    // this._addJob(
+    //   'backupDatabase',
+    //   '0 0 * * *',
+    //   async () => {
+    //     console.log('Running another job at:', new Date().toLocaleString("en-US", { timeZone: "Asia/Jakarta" }))
+    //     await this._backupService.backUpFullDatabaseToGDrive();
+    //   }
+    // )
   }
 
   private _addJob(

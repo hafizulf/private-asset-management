@@ -68,3 +68,5 @@ redis/
 
 #
 backup/
+token.json
+oauth-client.json

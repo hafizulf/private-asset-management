@@ -13,7 +13,9 @@ if (fs.existsSync(defaultEnvPath)) {
   process.exit(1);
 }
 
-const requiredEnvVars = ['APP_ENV', 'APP_HOST', 'APP_PORT', 'APP_API_PREFIX', 'DB_USER', 'DB_PASSWORD', 'DB_NAME', 'DB_HOST', 'DB_PORT', 'DB_DIALECT', 'JWT_SECRET_KEY', 'JWT_REFRESH_SECRET_KEY', 'JWT_SECRET_TTL', 'JWT_REFRESH_SECRET_TTL'];
+const requiredEnvVars = ['APP_ENV', 'APP_HOST', 'APP_PORT', 'APP_API_PREFIX', 'DB_USER', 'DB_PASSWORD', 'DB_NAME', 'DB_HOST', 'DB_PORT', 'DB_DIALECT', 'JWT_SECRET_KEY', 'JWT_REFRESH_SECRET_KEY', 'JWT_SECRET_TTL', 'JWT_REFRESH_SECRET_TTL',
+  'DRIVE_FOLDER_ID'
+];
 
 const optionalEnvVars: string [] = [];
 

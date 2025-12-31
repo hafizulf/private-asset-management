@@ -21,4 +21,15 @@ export class BackUpController {
       data,
     }).send();
   }
+
+  public uploadToGDrive = async (_req: IAuthRequest, res: Response): Promise<Response> => {
+    const FOLDER_ID = process.env.DRIVE_FOLDER_ID;
+    const data = await this._service.backupAndUpload(FOLDER_ID!);
+
+    return StandardResponse.create(res).setResponse({
+      message: "Upload backup db successfully",
+      status: HttpCode.OK,
+      data,
+    }).send();
+  }
 }

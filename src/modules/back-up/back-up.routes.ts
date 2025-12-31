@@ -19,5 +19,11 @@ export class BackUpRoutes {
       this.AuthMiddleware.roleAuthorize([SUPERADMIN]),
       asyncWrap(this.controller.dumpPostgresDocker)
     )
+    router.post(
+      `${this.routes}/upload-gdrive`,
+      this.AuthMiddleware.authenticate,
+      this.AuthMiddleware.roleAuthorize([SUPERADMIN]),
+      asyncWrap(this.controller.uploadToGDrive)
+    )
   }
 }
