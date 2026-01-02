@@ -12,8 +12,8 @@ export class BuyHistory extends Model <
   declare commodityId: string;
   declare commodity?: NonAttribute<Commodity>;
   declare date: Date;
-  declare qty: number;
-  declare totalPrice: number;
+  declare qty: string;
+  declare totalPrice: string;
   declare memo: CreationOptional<string>;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;

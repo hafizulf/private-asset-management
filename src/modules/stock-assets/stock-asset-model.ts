@@ -11,7 +11,7 @@ export class StockAsset extends Model <
   declare id: CreationOptional<string>;
   declare commodityId: string;
   declare commodity?: NonAttribute<Commodity>;
-  declare qty: number;
+  declare qty: string;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
   declare deletedAt: CreationOptional<Date>;

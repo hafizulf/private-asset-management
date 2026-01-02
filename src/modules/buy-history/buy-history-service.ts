@@ -12,6 +12,8 @@ import { ManageDbTransactionService } from "../common/services/manage-db-transac
 import { Transaction } from "sequelize";
 import { IStockAssetRepository } from "../stock-assets/stock-asset-repository-interface";
 import { IAuditLogsRepository } from "../audit-logs/audit-logs-repository-interface";
+import { toDecimal } from "@/helpers/math.helper";
+import Decimal from "decimal.js";
 
 @injectable()
 export class BuyHistoryService {
@@ -37,7 +39,7 @@ export class BuyHistoryService {
         // create or update stock asset
         await this._stockAssetRepository.createOrUpdate({
           commodityId: commodity.id,
-          qty: props.qty
+          qty: toDecimal(props.qty).toFixed(2),
         }, { transaction });
     
         // store buy history
@@ -120,11 +122,14 @@ export class BuyHistoryService {
       return [];
     }
 
+    const totalQty = data.reduce((sum, el) => sum.plus(toDecimal(el.qty)), new Decimal(0));
+    const totalPrice = data.reduce((sum, el) => sum.plus(toDecimal(el.totalPrice)), new Decimal(0));
+
     const response: ICommodityBuyHistoryView = {
       commodityId: data[0]?.commodityId!,
       commodityName: data[0]?.commodity?.name!,
-      totalQty: `${data.reduce((sum, el) => sum + el.qty, 0)} ${data[0]?.commodity?.unit}`,
-      totalPrice: data.reduce((sum, el) => sum + el.totalPrice, 0),
+      totalQty: `${totalQty.toFixed(2)} ${data[0]!.commodity!.unit}`,
+      totalPrice: Number(totalPrice.toFixed(2)),
       buyHistories: [],
     }
 
@@ -145,29 +150,32 @@ export class BuyHistoryService {
     return response;
   }
 
-  public update = async (id: string, props: Partial<IBuyHistory>, userId: string): Promise<IBuyHistory> => {
+  public update = async (id: string, props: IBuyHistory, userId: string): Promise<IBuyHistory> => {
     const result = await this._dbTransactionService.handle(
       async (transaction: Transaction) => {
         const data = await this._repository.findById(id);
-        const currentQty = data.qty;
-        const newQty = props.qty ?? data.qty;
-        if(newQty !== currentQty) {
-          const dataStockAsset = await this._stockAssetRepository.findByCommodityId(data.commodityId);
-          const stockQty = dataStockAsset.qty;
-          const qtyDiff = newQty - currentQty;
-          const finalResult = stockQty + qtyDiff;
+        const currentQty = toDecimal(data.qty);
+        const newQty = toDecimal(props.qty);
 
-          if(finalResult < 0) {
+        // compare using Decimal (not !==)
+        if (!newQty.eq(currentQty)) {
+          const dataStockAsset = await this._stockAssetRepository.findByCommodityId(data.commodityId);
+          const stockQty = toDecimal(dataStockAsset.qty);
+
+          // If buy qty increases, stock increases. If decreases, stock decreases.
+          const qtyDiff = newQty.minus(currentQty);
+          const finalResult = stockQty.plus(qtyDiff);
+
+          if (finalResult.lt(0)) {
             throw new AppError({
               statusCode: HttpCode.BAD_REQUEST,
               description: StockAssetErrMessage.INSUFFICIENT_STOCK,
-            })
+            });
           }
 
-          await this._stockAssetRepository.update(dataStockAsset.id, 
-            { 
-              qty: finalResult 
-            }, 
+          await this._stockAssetRepository.update(
+            dataStockAsset.id,
+            { qty: finalResult.toFixed(2) },
             { transaction }
           );
         }
@@ -198,16 +206,23 @@ export class BuyHistoryService {
       async (transaction: Transaction) => {
         const data = await this._repository.findById(id);
         const dataStockAsset = await this._stockAssetRepository.findByCommodityId(data.commodityId);
-        const stockQty = dataStockAsset.qty;
-        const qtyDiff = data.qty;
-        const finalResult = stockQty - qtyDiff;
-  
-        await this._stockAssetRepository.update(dataStockAsset.id, 
-          {
-            qty: finalResult
-          }, 
+
+        const stockQty = toDecimal(dataStockAsset.qty);
+        const qtyDiff = toDecimal(data.qty);
+        const finalResult = stockQty.minus(qtyDiff);
+
+        if (finalResult.lt(0)) {
+          throw new AppError({
+            statusCode: HttpCode.BAD_REQUEST,
+            description: StockAssetErrMessage.INSUFFICIENT_STOCK,
+          });
+        }
+
+        await this._stockAssetRepository.update(
+          dataStockAsset.id,
+          { qty: finalResult.toFixed(2) },
           { transaction }
-        );  
+        );
 
         await this._auditLogsRepository.store({
           userId,

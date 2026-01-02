@@ -10,6 +10,7 @@ import {
 } from "@/modules/common/sequelize";
 import { AppError, HttpCode } from "@/exceptions/app-error";
 import { Op, Sequelize } from "sequelize";
+import { toDecimal } from "@/helpers/math.helper";
 
 @injectable()
 export class StockAssetRepository implements IStockAssetRepository {
@@ -22,7 +23,7 @@ export class StockAssetRepository implements IStockAssetRepository {
 
     if(dataAsset) {
       await dataAsset.update({
-        qty: dataAsset.qty + props.qty
+        qty: toDecimal(dataAsset.qty).plus(toDecimal(props.qty)).toFixed(2),
       }, 
       { transaction: option.transaction }
       );

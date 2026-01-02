@@ -7,8 +7,8 @@ export interface ISellHistory {
   commodityId: string;
   commodity?: ICommodity;
   date: Date;
-  qty: number;
-  totalPrice: number;
+  qty: string;
+  totalPrice: string;
   memo?: string;
   createdAt?: Date;
   updatedAt?: Date;
@@ -59,11 +59,11 @@ export class SellHistoryDomain
     return this.props.date;
   }
 
-  get qty(): number {
+  get qty(): string {
     return this.props.qty;
   }
 
-  get totalPrice(): number {
+  get totalPrice(): string {
     return this.props.totalPrice;
   }
 

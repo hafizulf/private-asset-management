@@ -2,6 +2,7 @@ import { z } from "zod";
 import { singleUUIDSchema, uuidV7RegexSchema } from "../common/validation/uuid-schema";
 import { paginatedSchema } from "../common/validation/pagination-schema";
 import dayjs from "dayjs";
+import { decimal2String } from "../common/validation/math-schema";
 
 const format = "DD/MM/YYYY";
 
@@ -19,20 +20,8 @@ export const createBuyHistorySchema = z.object({
       const parsed = dayjs(val, format, true);
       return parsed.tz("Asia/Jakarta").toDate();
     }),
-  qty: z
-  .number()
-  .gt(0)
-  .refine(
-    v => Number.isInteger(v * 100),
-    { message: 'Max 2 decimal places allowed' }
-  ),
-  totalPrice: z
-  .number()
-  .gt(0)
-  .refine(
-    v => Number.isInteger(v * 100),
-    { message: 'Max 2 decimal places allowed' }
-  ),
+  qty: decimal2String,
+  totalPrice: decimal2String,
   memo: z.string().optional(),
 });
 
@@ -63,22 +52,9 @@ export const updateBuyHistorySchema = z.object({
     .transform((val) => {
       const parsed = dayjs(val, format, true);
       return parsed.tz("Asia/Jakarta").toDate();
-    })
-    .optional(),
-  qty: z
-  .number()
-  .gt(0)
-  .refine(
-    v => Number.isInteger(v * 100),
-    { message: 'Max 2 decimal places allowed' }
-  ).optional(),
-  totalPrice: z
-  .number()
-  .gt(0)
-  .refine(
-    v => Number.isInteger(v * 100),
-    { message: 'Max 2 decimal places allowed' }
-  ).optional(),
+    }),
+  qty: decimal2String,
+  totalPrice: decimal2String,
   memo: z.string().optional(),
 });
 

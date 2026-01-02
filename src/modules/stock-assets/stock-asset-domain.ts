@@ -6,7 +6,7 @@ export interface IStockAsset {
   id?: string;
   commodityId: string;
   commodity?: ICommodity;
-  qty: number;
+  qty: string;
   createdAt?: Date;
   updatedAt?: Date;
   deletedAt?: Date;
@@ -49,7 +49,7 @@ export class StockAssetDomain
     return this.props.commodity;
   }
 
-  get qty(): number {
+  get qty(): string {
     return this.props.qty;
   }
 

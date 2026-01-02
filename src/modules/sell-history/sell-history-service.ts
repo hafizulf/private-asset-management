@@ -12,6 +12,8 @@ import { ManageDbTransactionService } from "../common/services/manage-db-transac
 import { Transaction } from "sequelize";
 import { IStockAssetRepository } from "../stock-assets/stock-asset-repository-interface";
 import { IAuditLogsRepository } from "../audit-logs/audit-logs-repository-interface";
+import { toDecimal } from "@/helpers/math.helper";
+import Decimal from "decimal.js";
 
 @injectable()
 export class SellHistoryService {
@@ -24,7 +26,6 @@ export class SellHistoryService {
   ) {}
 
   public store = async (props: ISellHistory, userId: string): Promise<ISellHistory> => {
-    console.log("🚀 ~ SellHistoryService ~ props:", props)
     const result = await this._dbTransactionService.handle(
       async (transaction: Transaction) => {
         const commodity = await this._commodityRepository.findById(props.commodityId);
@@ -36,22 +37,20 @@ export class SellHistoryService {
         }
 
         const dataStockAsset = await this._stockAssetRepository.findByCommodityId(props.commodityId);
-        console.log("🚀 ~ SellHistoryService ~ dataStockAsset:", dataStockAsset)
-        const stockQty = dataStockAsset.qty;
-        console.log("🚀 ~ SellHistoryService ~ stockQty:", stockQty)
-        const qtyToSale = props.qty;
-        console.log("🚀 ~ SellHistoryService ~ qtyToSale:", qtyToSale)
+        const stockQty = toDecimal(dataStockAsset.qty);
+        const qtyToSale = toDecimal(props.qty);
 
-        if(stockQty < qtyToSale) {
+        if (stockQty.lt(qtyToSale)) {
           throw new AppError({
             statusCode: HttpCode.BAD_REQUEST,
             description: StockAssetErrMessage.INSUFFICIENT_STOCK,
           })
         }
 
-        const qty = stockQty - qtyToSale;
+        const qty = stockQty.minus(qtyToSale).toFixed(2);
 
-        await this._stockAssetRepository.update(dataStockAsset.id, { qty }, { transaction });  // update stock asset
+        await this._stockAssetRepository.update(dataStockAsset.id, { qty }, { transaction });
+
         const storedSellHistory = (await this._repository.store(props, { transaction })).unmarshal();  // store sell history
         await this._auditLogsRepository.store({  // add logs
           userId,
@@ -129,11 +128,14 @@ export class SellHistoryService {
       return [];
     }
 
+    const totalQty = data.reduce((sum, el) => sum.plus(toDecimal(el.qty)), new Decimal(0));
+    const totalPrice = data.reduce((sum, el) => sum.plus(toDecimal(el.totalPrice)), new Decimal(0));
+
     const response: ICommoditySellHistoryView = {
       commodityId: data[0]?.commodityId!,
       commodityName: data[0]?.commodity?.name!,
-      totalQty: `${data.reduce((sum, el) => sum + el.qty, 0)} ${data[0]?.commodity?.unit}`,
-      totalPrice: data.reduce((sum, el) => sum + el.totalPrice, 0),
+      totalQty: `${totalQty.toFixed(2)} ${data[0]!.commodity!.unit}`,
+      totalPrice: Number(totalPrice.toFixed(2)),
       sellHistories: [],
     }
 
@@ -154,24 +156,31 @@ export class SellHistoryService {
     return response;
   }
 
-  public update = async (id: string, props: Partial<ISellHistory>, userId: string): Promise<ISellHistory> => {
+  public update = async (id: string, props: ISellHistory, userId: string): Promise<ISellHistory> => {
     const result = await this._dbTransactionService.handle(
       async (transaction: Transaction) => {
         const data = await this._repository.findById(id);
         const dataStockAsset = await this._stockAssetRepository.findByCommodityId(data.commodityId);
 
-        const newSaleQty = props.qty ?? data.qty;
-        const qtyDiff = data.qty - newSaleQty;
-        const qty = dataStockAsset.qty + qtyDiff;
+        const oldSaleQty = toDecimal(data.qty);
+        const newSaleQty = toDecimal(props.qty);
 
-        if(qty < 0) {
+        const qtyDiff = oldSaleQty.minus(newSaleQty);                 // old - new
+        const qty = toDecimal(dataStockAsset.qty).plus(qtyDiff);       // stock + diff
+
+        if (qty.lt(0)) {
           throw new AppError({
             statusCode: HttpCode.BAD_REQUEST,
             description: StockAssetErrMessage.INSUFFICIENT_STOCK,
-          })
+          });
         }
 
-        await this._stockAssetRepository.update(dataStockAsset.id,  { qty }, { transaction });
+        await this._stockAssetRepository.update(
+          dataStockAsset.id,
+          { qty: qty.toFixed(2) },
+          { transaction }
+        );
+
         const dataBefore = await this._repository.findById(id);
         const updatedSellHistory = (await this._repository.update(id, props, { transaction })).unmarshal();
         await this._auditLogsRepository.store({
@@ -194,7 +203,7 @@ export class SellHistoryService {
       async (transaction: Transaction) => {
         const data = await this._repository.findById(id);
         const dataStockAsset = await this._stockAssetRepository.findByCommodityId(data.commodityId);
-        const qty = dataStockAsset.qty + data.qty;
+        const qty = toDecimal(dataStockAsset.qty).plus(toDecimal(data.qty)).toFixed(2);
 
         await this._stockAssetRepository.update(dataStockAsset.id,  { qty }, { transaction });
         await this._auditLogsRepository.store({

@@ -8,6 +8,8 @@ import { ICommodityRepository } from "../commodity/commodity-repository-interfac
 import { IStockAssetHistory } from "./stock-asset-dto";
 import { IBuyHistoryRepository } from "../buy-history/buy-history-repository-interface";
 import { ISellHistoryRepository } from "../sell-history/sell-history-repository-interface";
+import { toDecimal } from "@/helpers/math.helper";
+import Decimal from "decimal.js";
 
 @injectable()
 export class StockAssetService {
@@ -73,17 +75,28 @@ export class StockAssetService {
     });
     const { commodity, ...rest } = dataStockAssets.unmarshal();
     const commodityUnit = commodity?.unit ?? "";
-    const totalBuyingPrice = dataBuyHistories.reduce((prev, curr) => prev + curr.totalPrice, 0);
-    const totalSellingPrice = dataSellHistories.reduce((prev, curr) => prev + curr.totalPrice, 0);
+
+    const totalBuyingPrice = dataBuyHistories.reduce(
+      (sum, curr) => sum.plus(toDecimal(curr.totalPrice)),
+      new Decimal(0)
+    );
+
+    const totalSellingPrice = dataSellHistories.reduce(
+      (sum, curr) => sum.plus(toDecimal(curr.totalPrice)),
+      new Decimal(0)
+    );
+
+    const totalAssetValue = totalBuyingPrice.minus(totalSellingPrice);
+    const totalProfit = totalSellingPrice.minus(totalBuyingPrice);
 
     return {
       ...rest,
       commodityName: commodity?.name ?? "",
-      quantity: `${rest.qty} ${commodityUnit}`,  
-      totalAssetValue: totalBuyingPrice - totalSellingPrice,
-      totalProfit: totalSellingPrice - totalBuyingPrice,
-      totalBuyingPrice,
-      totalSellingPrice,
+      quantity: `${rest.qty} ${commodityUnit}`,
+      totalAssetValue: Number(totalAssetValue.toFixed(2)),
+      totalProfit: Number(totalProfit.toFixed(2)),
+      totalBuyingPrice: Number(totalBuyingPrice.toFixed(2)),
+      totalSellingPrice: Number(totalSellingPrice.toFixed(2)),
       buyHistories: dataBuyHistories,
       sellHistories: dataSellHistories,
       createdAt: undefined,
