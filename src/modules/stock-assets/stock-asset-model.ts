@@ -36,7 +36,7 @@ StockAsset.init({
     }
   },
   qty: {
-    type: DataTypes.FLOAT,
+    type: DataTypes.DECIMAL(10, 2),
     allowNull: false,
   },
   createdAt: DataTypes.DATE,
