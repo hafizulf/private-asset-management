@@ -15,7 +15,15 @@ import { SellHistoryErrMessage } from "@/exceptions/error-message-constants";
 @injectable()
 export class SellHistoryRepository implements ISellHistoryRepository {
   findAll = async (): Promise<SellHistoryDomain[]> => {
-    const data = await SellHistoryPersistence.findAll();
+    const data = await SellHistoryPersistence.findAll({
+      include: [
+        {
+          model: CommodityPersistence, 
+          attributes: ["name", "unit"],
+        },
+      ],
+      order: [["createdAt", "DESC"]],
+    });
     return data.map((el) => SellHistoryDomain.create(el.toJSON()));
   }
 

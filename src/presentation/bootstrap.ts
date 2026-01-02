@@ -38,7 +38,7 @@ export class Bootstrap {
   private middleware(): void {
     const apiRateLimiter = rateLimit({
       windowMs: 60 * 60 * 10000,
-      max: 100,                     // limit each IP to 100 requests per windowMs
+      max: 1000,                     // limit each IP to 100 requests per windowMs
       message: {
         status: 429,
         message: "Too many requests, please try again later.",

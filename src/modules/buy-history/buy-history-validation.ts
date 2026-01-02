@@ -67,11 +67,18 @@ export const updateBuyHistorySchema = z.object({
     .optional(),
   qty: z
   .number()
-  .optional()
-  .refine((val) => val === undefined || val >= 1, {
-    message: 'Qty must be at least 1',
-  }),
-  totalPrice: z.number().optional(),
+  .gt(0)
+  .refine(
+    v => Number.isInteger(v * 100),
+    { message: 'Max 2 decimal places allowed' }
+  ).optional(),
+  totalPrice: z
+  .number()
+  .gt(0)
+  .refine(
+    v => Number.isInteger(v * 100),
+    { message: 'Max 2 decimal places allowed' }
+  ).optional(),
   memo: z.string().optional(),
 });
 

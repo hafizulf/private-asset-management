@@ -24,6 +24,7 @@ export class SellHistoryService {
   ) {}
 
   public store = async (props: ISellHistory, userId: string): Promise<ISellHistory> => {
+    console.log("🚀 ~ SellHistoryService ~ props:", props)
     const result = await this._dbTransactionService.handle(
       async (transaction: Transaction) => {
         const commodity = await this._commodityRepository.findById(props.commodityId);
@@ -35,8 +36,11 @@ export class SellHistoryService {
         }
 
         const dataStockAsset = await this._stockAssetRepository.findByCommodityId(props.commodityId);
+        console.log("🚀 ~ SellHistoryService ~ dataStockAsset:", dataStockAsset)
         const stockQty = dataStockAsset.qty;
+        console.log("🚀 ~ SellHistoryService ~ stockQty:", stockQty)
         const qtyToSale = props.qty;
+        console.log("🚀 ~ SellHistoryService ~ qtyToSale:", qtyToSale)
 
         if(stockQty < qtyToSale) {
           throw new AppError({
