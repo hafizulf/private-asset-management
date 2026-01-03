@@ -180,15 +180,15 @@ export class BuyHistoryService {
           );
         }
 
-        const dataBefore = await this._repository.findById(id);
-        const updatedBuyHistory = (await this._repository.update(id, props, { transaction })).unmarshal();
+        const { commodity, ...dataBefore } = (await this._repository.findById(id)).unmarshal();
+        const updatedBuyHistory  = (await this._repository.update(id, props, { transaction })).unmarshal();
 
         await this._auditLogsRepository.store({
           userId,
           type: "buy",
           action: "update",
           payload: { 
-            before: dataBefore.unmarshal(),
+            before: dataBefore,
             after: updatedBuyHistory
           },
         }, { transaction });
