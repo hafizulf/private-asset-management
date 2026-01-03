@@ -8,6 +8,7 @@ export interface IBuyHistory {
   commodity?: ICommodity;
   date: Date;
   qty: string;
+  unitPrice?: string;
   totalPrice: string;
   memo?: string;
   createdAt?: Date;
@@ -35,6 +36,7 @@ export class BuyHistoryDomain
       commodity: this.commodity,
       date: this.date,
       qty: this.qty,
+      unitPrice: this.unitPrice,
       totalPrice: this.totalPrice,
       memo: this.memo,
       createdAt: this.createdAt,
@@ -61,6 +63,10 @@ export class BuyHistoryDomain
 
   get qty(): string {
     return this.props.qty;
+  }
+
+  get unitPrice(): string | undefined {
+    return this.props.unitPrice;
   }
 
   get totalPrice(): string {

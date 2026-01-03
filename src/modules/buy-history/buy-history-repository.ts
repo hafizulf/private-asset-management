@@ -73,6 +73,14 @@ export class BuyHistoryRepository implements IBuyHistoryRepository {
 
   findById = async (id: string): Promise<BuyHistoryDomain> => {
     const data = await BuyHistoryPersistence.findByPk(id, {
+      attributes: {
+        include: [
+          [
+            Sequelize.literal(`ROUND(("total_price" / "qty")::numeric, 2)`),
+            "unitPrice",
+          ],
+        ],
+      },
       include: [
         {
           model: CommodityPersistence, 
