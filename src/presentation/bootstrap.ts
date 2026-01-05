@@ -22,90 +22,86 @@ export class Bootstrap {
   public httpServer: Server;
 
   constructor(
-    @inject(Routes) private appRoutes: Routes, // inject routes by class
-    @inject(TYPES.BackgroundServiceManager) private backgroundServiceManager: BackgroundServiceManager, // inject by symbol
-    // @inject(TYPES.SocketIO) private socketIO: SocketIO,
+    @inject(Routes) private appRoutes: Routes,
+    @inject(TYPES.BackgroundServiceManager)
+    private backgroundServiceManager: BackgroundServiceManager
   ) {
     this.app = express();
     this.httpServer = createServer(this.app);
-    this.middleware();          // apply middleware
-    this.setRoutes();           // set routes
-    this.middlewareError();     // error handler
+
+    this.middleware();
+    this.setRoutes();
+    this.middlewareError();
     this.initializeDatabase();
-    this.initializeBackgroundServices();  // initialize background services
+    this.initializeBackgroundServices();
   }
 
   private middleware(): void {
+    this.app.use(cors(HttpCorsOptions));
+    this.app.options('*', cors(HttpCorsOptions));
+
+    this.app.use(bodyParser.json());
+    this.app.use(bodyParser.urlencoded({ extended: false }));
+    this.app.use(cookieParser());
+
+    this.app.use(express.static(path.join(__dirname, '../../public')));
+
     const apiRateLimiter = rateLimit({
-      windowMs: 60 * 60 * 10000,
-      max: 1000,                     // limit each IP to 100 requests per windowMs
+      windowMs: 60 * 60 * 1000,
+      max: 100,
+      standardHeaders: true,
+      legacyHeaders: false,
       message: {
         status: 429,
-        message: "Too many requests, please try again later.",
+        message: 'Too many requests, please try again later.',
       },
-      standardHeaders: true,        // Return rate limit info in the `RateLimit-*` headers
-      legacyHeaders: false,         // Disable the `X-RateLimit-*` headers
-    })
-
-    this.app.use(APP_API_PREFIX, apiRateLimiter);                       // apply rate limiter
-
-    // Handle CORS errors
-    this.app.use(cors(HttpCorsOptions));
-    this.app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-      if (err instanceof Error && err.message.includes("Blocked by CORS")) {
-        console.error(`[${new Date().toISOString()}] ${err.message} for URL: ${req.url}`);
-        return res.status(403).json({ error: "CORS policy: origin not allowed" });
-      }
-      return next(err);
+      skip: (req) => req.method === 'OPTIONS',
     });
 
-    this.app.use(bodyParser.json());                                    // parse application/json
-    this.app.use(bodyParser.urlencoded({ extended: false }));           // parse application/x-www-form-urlencoded
-    this.app.use(cookieParser());                                       // parse cookies
-    this.app.use(express.static(path.join(__dirname, "../../public"))); // serve static files
+    this.app.use(APP_API_PREFIX, apiRateLimiter);
 
-    const requestLogger = (
-      request: Request,
-      response: Response,
-      next: NextFunction
-    ) => {
-      response.removeHeader("X-Powered-By");
-      response.header("Access-Control-Allow-Origin", "*");
-      response.header(
-        "Access-Control-Allow-Headers",
-        "content-type, Authorization"
-      );
-      response.header(
-        "Access-Control-Allow-Methods",
-        "GET, POST, PUT, DELETE, OPTIONS"
-      );
+    this.app.use((req: Request, res: Response, next: NextFunction) => {
+      res.removeHeader('X-Powered-By');
 
-      const clientIp = request.headers["x-forwarded-for"] || request.socket.remoteAddress || 'unknown';
-      console.log(`${request.method} url:: ${request.url} from ip:: ${clientIp}`);
+      const clientIp =
+        (req.headers['x-forwarded-for'] as string) ||
+        req.socket.remoteAddress ||
+        'unknown';
+
+      console.log(
+        `${req.method} url:: ${req.url} from ip:: ${clientIp} origin:: ${
+          req.headers.origin ?? 'none'
+        }`
+      );
 
       next();
-    }
-
-    this.app.use(requestLogger);                                       // request logger
+    });
   }
 
   private setRoutes(): void {
     const router = express.Router();
 
     this.app.use(APP_API_PREFIX, router);
-    this.appRoutes.setRoutes(router);   // set routes
-    
-    router.get("/health-check", (_req: Request, res: Response) => {
+    this.appRoutes.setRoutes(router);
+
+    router.get('/health-check', (_req: Request, res: Response) => {
       res.status(200).json({
-        status: "ok",
-        message: "Server is up and running",
+        status: 'ok',
+        message: 'Server is up and running',
       });
     });
 
-    this.app.use("/storage", express.static(path.join(process.cwd(), "./storage")));
+    this.app.use(
+      '/storage',
+      express.static(path.join(process.cwd(), './storage'))
+    );
   }
 
   private middlewareError(): void {
+    const invalidPathHandler = (_req: Request, res: Response) => {
+      res.status(404).json({ message: 'route not found' });
+    };
+
     const errorLogger = (
       error: AppError,
       _req: Request,
@@ -127,10 +123,6 @@ export class Bootstrap {
       _next: NextFunction
     ) => {
       errorHandler.handleError(error, res);
-    };
-
-    const invalidPathHandler = (_req: Request, response: Response) => {
-      response.status(400).json({ message: "route not found" });
     };
 
     this.app.use(invalidPathHandler);
