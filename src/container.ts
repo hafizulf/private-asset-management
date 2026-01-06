@@ -20,6 +20,7 @@ import { SellHistoryRoutes } from "@/modules/sell-history/sell-history-routes";
 import { StockAssetRoutes } from "@/modules/stock-assets/stock-asset-routes";
 import { AuditLogsRoutes } from "@/modules/audit-logs/audit-logs-routes";
 import { BackUpRoutes } from "@/modules/back-up/back-up.routes";
+import { DashboardTotalRoutes } from "@/modules/dashboard-totals/dashboard-total.routes";
 
 // Import Middlewares
 import { AuthMiddleware } from "@/presentation/middlewares/auth-middleware";
@@ -36,6 +37,7 @@ import { SellHistoryController } from "@/modules/sell-history/sell-history-contr
 import { StockAssetController } from "@/modules/stock-assets/stock-asset-controller";
 import { AuditLogsController } from "@/modules/audit-logs/audit-logs-controller";
 import { BackUpController } from "@/modules/back-up/back-up.controller";
+import { DashboardTotalController } from "./modules/dashboard-totals/dashboard-total-controller";
 
 // Import Services
 import { BackgroundServiceManager } from "./modules/common/services/background-service-manager";
@@ -104,6 +106,7 @@ container.bind<SellHistoryRoutes>(SellHistoryRoutes).toSelf().inSingletonScope()
 container.bind<StockAssetRoutes>(StockAssetRoutes).toSelf().inSingletonScope();
 container.bind<AuditLogsRoutes>(AuditLogsRoutes).toSelf().inSingletonScope();
 container.bind<BackUpRoutes>(BackUpRoutes).toSelf().inSingletonScope();
+container.bind<DashboardTotalRoutes>(DashboardTotalRoutes).toSelf().inSingletonScope();
 
 // Middleware
 container.bind(AuthMiddleware).toSelf();
@@ -120,6 +123,7 @@ container.bind(SellHistoryController).toSelf();
 container.bind(StockAssetController).toSelf();
 container.bind(AuditLogsController).toSelf();
 container.bind(BackUpController).toSelf();
+container.bind(DashboardTotalController).toSelf();
 
 // Services
 container.bind<BackgroundServiceManager>(TYPES.BackgroundServiceManager).to(BackgroundServiceManager);

@@ -39,7 +39,7 @@ BuyHistory.init({
     }
   },
   date: {
-    type: DataTypes.DATEONLY,
+  type: DataTypes.DATEONLY,
     allowNull: false,
   },
   qty: {

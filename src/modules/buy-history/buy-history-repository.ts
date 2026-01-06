@@ -9,8 +9,11 @@ import {
   BuyHistory as BuyHistoryPersistence,
   Commodity as CommodityPersistence,
 } from "@/modules/common/sequelize";
-import { Op, Sequelize } from "sequelize";
+import { Op, QueryTypes, Sequelize } from "sequelize";
 import { BaseQueryOption } from "../common/dto/common-dto";
+import { DashboardFilter, DateFormat, DateRange, ENUM_FILTER_DASHBOARD } from "../dashboard-totals/dashboard-total.dto";
+import dayjs from 'dayjs';
+import { sequelize } from "@/config/database";
 
 @injectable()
 export class BuyHistoryRepository implements IBuyHistoryRepository {
@@ -139,4 +142,95 @@ export class BuyHistoryRepository implements IBuyHistoryRepository {
 
     return data.map((el) => BuyHistoryDomain.create(el.toJSON()));
   }
+
+  countPrice = async (filter: DashboardFilter, dateRange: DateRange): Promise<string> => {
+    type TimeUnit = "day" | "month" | "year";
+    const unitByFilter: Partial<Record<DashboardFilter, TimeUnit>> = {
+      [ENUM_FILTER_DASHBOARD.DAY]: "day",
+      [ENUM_FILTER_DASHBOARD.MONTH]: "month",
+      [ENUM_FILTER_DASHBOARD.YEAR]: "year",
+    };
+
+    const unit = unitByFilter[filter];
+
+    let whereSql = `WHERE "deleted_at" IS NULL`;
+    let replacements: Record<string, unknown> = {};
+
+    if (filter === ENUM_FILTER_DASHBOARD.DATE_RANGE) {
+      whereSql += ` AND "date" >= :from AND "date" <= :to`;
+      replacements = {
+        from: dateRange?.from,
+        to: dateRange?.to,
+      };
+    } else if (unit) {
+      whereSql += ` AND "date" >= :from AND "date" <= :to`;
+      replacements = {
+        from: dayjs().startOf(unit).format(DateFormat),
+        to: dayjs().endOf(unit).format(DateFormat),
+      };
+    }
+
+    const [row = { total: "0" }] = await sequelize.query<{ total: string }>(
+      `
+      SELECT COALESCE(SUM("total_price"), 0)::text AS total
+      FROM "buy_histories"
+      ${whereSql}
+      `,
+      { replacements, type: QueryTypes.SELECT }
+    );
+
+    return row.total;
+  };
+
+  countPricePrevious = async (filter: DashboardFilter, dateRange: DateRange): Promise<string> => {
+    type TimeUnit = "day" | "month" | "year";
+    const unitByFilter: Partial<Record<DashboardFilter, TimeUnit>> = {
+      [ENUM_FILTER_DASHBOARD.DAY]: "day",
+      [ENUM_FILTER_DASHBOARD.MONTH]: "month",
+      [ENUM_FILTER_DASHBOARD.YEAR]: "year",
+    };
+
+    if (filter === ENUM_FILTER_DASHBOARD.DATE_RANGE) {
+      if (!dateRange?.from || !dateRange?.to) return "0";
+
+      const [row = { total: "0" }] = await sequelize.query<{ total: string }>(
+        `
+        SELECT COALESCE(SUM("total_price"), 0)::text AS total
+        FROM "buy_histories"
+        WHERE "deleted_at" IS NULL
+          AND "date" >= :from
+          AND "date" <= :to
+        `,
+        {
+          replacements: { from: dateRange.from, to: dateRange.to },
+          type: QueryTypes.SELECT,
+        }
+      );
+
+      return row.total;
+    }
+
+    const unit = unitByFilter[filter];
+    if (!unit) return "0"; // ALL doesn't have a meaningful "previous" period for trend
+
+    const base = dayjs().subtract(1, unit);
+
+    const replacements = {
+      from: base.startOf(unit).format(DateFormat),
+      to: base.endOf(unit).format(DateFormat),
+    };
+
+    const [row = { total: "0" }] = await sequelize.query<{ total: string }>(
+      `
+      SELECT COALESCE(SUM("total_price"), 0)::text AS total
+      FROM "buy_histories"
+      WHERE "deleted_at" IS NULL
+        AND "date" >= :from
+        AND "date" <= :to
+      `,
+      { replacements, type: QueryTypes.SELECT }
+    );
+
+    return row.total;
+  };
 }
