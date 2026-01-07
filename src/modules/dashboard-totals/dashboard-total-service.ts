@@ -5,12 +5,13 @@ import { IDashboardTotal } from "./dashboard-total-domain";
 import { IUserRepository } from "../users/user-repository-interface";
 import { AppError, HttpCode } from "@/exceptions/app-error";
 import { 
+  BasicDashboardParams,
   DateFormat, 
   DateRange, 
   ENUM_FILTER_DASHBOARD,
-  TotalProfitLossParams, 
   TotalProfitLossResponse,
   TotalStockAssetsResponse,
+  totalTransactions,
 } from "./dashboard-total.dto";
 import { IBuyHistoryRepository } from "../buy-history/buy-history-repository-interface";
 import { ISellHistoryRepository } from "../sell-history/sell-history-repository-interface";
@@ -66,7 +67,7 @@ export class DashboardTotalService {
   /**
    * 1. Total Profit/Loss (Assets) [day, month, year, all time]
   */
-  async totalProfitLoss(params: TotalProfitLossParams): Promise<TotalProfitLossResponse> {
+  async totalProfitLoss(params: BasicDashboardParams): Promise<TotalProfitLossResponse> {
     const { filter, from, to } = params;
 
     let currentRange: DateRange | undefined;
@@ -87,8 +88,8 @@ export class DashboardTotalService {
       };
     }
 
-    const currentSellHistory = toDecimal(await this._sellHistoryRepository.countPrice(filter, currentRange));
-    const currentBuyHistory = toDecimal(await this._buyHistoryRepository.countPrice(filter, currentRange));
+    const currentSellHistory = toDecimal((await this._sellHistoryRepository.countPrice(filter, currentRange)).totalPrice);
+    const currentBuyHistory = toDecimal((await this._buyHistoryRepository.countPrice(filter, currentRange)).totalPrice);
     const currentProfitLoss = currentSellHistory.minus(currentBuyHistory);
     
     const previousSellHistory = toDecimal(await this._sellHistoryRepository.countPricePrevious(filter, previousRange));
@@ -129,8 +130,38 @@ export class DashboardTotalService {
   }
 
   /**
-   * 3. Total Buy Transactions [day, month, year]
+   * 3. Total Buy Transactions [day, month, year] 
+  */
+  async totalBuyTransactions(params: BasicDashboardParams): Promise<totalTransactions> {
+    const { filter, from, to } = params;
+
+    let dateRange: DateRange | undefined;
+    if (filter === ENUM_FILTER_DASHBOARD.DATE_RANGE) {
+      const curFrom = from!;
+      const curTo = to!;
+      dateRange = { from: curFrom, to: curTo };
+    }
+
+    return (await this._buyHistoryRepository.countPrice(filter, dateRange));
+  }
+
+  /**
    * 4. Total Sell Transactions [day, month, year]
+  */
+  async totalSellTransactions(params: BasicDashboardParams): Promise<totalTransactions> {
+      const { filter, from, to } = params;
+
+      let dateRange: DateRange | undefined;
+      if (filter === ENUM_FILTER_DASHBOARD.DATE_RANGE) {
+        const curFrom = from!;
+        const curTo = to!;
+        dateRange = { from: curFrom, to: curTo };
+      }
+
+      return (await this._sellHistoryRepository.countPrice(filter, dateRange));
+    }
+
+  /**
    * 5. Buy vs sell over time (daily/weekly)
    * 6. Top 5 commodities by volume/value
    * 7. Last 10 buys/sells with date, commodity, qty, total

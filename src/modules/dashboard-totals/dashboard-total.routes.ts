@@ -25,5 +25,17 @@ export class DashboardTotalRoutes {
       this.AuthMiddleware.roleAuthorize([SUPERADMIN]),
       asyncWrap(this.controller.getStockAssets)
     )
+    router.get(
+      `${this.routes}/buy-transactions`,
+      this.AuthMiddleware.authenticate,
+      this.AuthMiddleware.roleAuthorize([SUPERADMIN]),
+      asyncWrap(this.controller.getBuyTransactions)
+    )
+    router.get(
+      `${this.routes}/sell-transactions`,
+      this.AuthMiddleware.authenticate,
+      this.AuthMiddleware.roleAuthorize([SUPERADMIN]),
+      asyncWrap(this.controller.getSellTransactions)
+    )
   }
 }

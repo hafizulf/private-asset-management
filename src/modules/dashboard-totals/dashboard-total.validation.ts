@@ -3,8 +3,7 @@ import { ENUM_FILTER_DASHBOARD } from "./dashboard-total.dto";
 import { indoDateToIso } from "../common/validation/date-schema";
 import { singleUUIDSchema } from "../common/validation/uuid-schema";
 
-export const getProfitLossSchema = z
-  .object({
+const basicDashboardSchema = z.object({
     filter: z.nativeEnum(ENUM_FILTER_DASHBOARD),
     from: indoDateToIso.optional(),
     to: indoDateToIso.optional(),
@@ -28,6 +27,12 @@ export const getProfitLossSchema = z
     }
   });
 
+export const getProfitLossSchema = basicDashboardSchema;
+
 export const getStockAssetsSchema = z.object({
   commodity: singleUUIDSchema.optional(),
 });
+
+export const getBuyTransactionsSchema = basicDashboardSchema;
+
+export const getSellTransactionsSchema = basicDashboardSchema;

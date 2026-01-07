@@ -135,7 +135,10 @@ export class SellHistoryRepository implements ISellHistoryRepository {
     return data.map((el) => SellHistoryDomain.create(el.toJSON()));
   }
 
-  countPrice = async (filter: DashboardFilter, dateRange: DateRange): Promise<string> => {
+  countPrice = async (
+    filter: DashboardFilter, 
+    dateRange: DateRange
+  ): Promise<{ totalTransactions: number, totalPrice: string }> => {
     type TimeUnit = "day" | "month" | "year";
     const unitByFilter: Partial<Record<DashboardFilter, TimeUnit>> = {
       [ENUM_FILTER_DASHBOARD.DAY]: "day",
@@ -162,16 +165,25 @@ export class SellHistoryRepository implements ISellHistoryRepository {
       };
     }
 
-    const [row = { total: "0" }] = await sequelize.query<{ total: string }>(
+    const [row = { total: "0", total_transactions: 0 }] =
+      await sequelize.query<{
+        total: string;
+        total_transactions: number;
+      }>(
       `
-      SELECT COALESCE(SUM("total_price"), 0)::text AS total
+      SELECT
+        COALESCE(SUM("total_price"), 0)::text AS total,
+        COUNT(*)::int AS total_transactions
       FROM "sell_histories"
       ${whereSql}
       `,
       { replacements, type: QueryTypes.SELECT }
     );
 
-    return row.total;
+    return {
+      totalPrice: row.total,
+      totalTransactions: row.total_transactions,
+    };
   };
 
   countPricePrevious = async (filter: DashboardFilter, dateRange: DateRange): Promise<string> => {

@@ -9,6 +9,6 @@ export interface ISellHistoryRepository
   findByCommodity(commodityId: string): Promise<SellHistoryDomain[]>,
   update(id: string, props: Partial<ISellHistory>, option?: BaseQueryOption): Promise<SellHistoryDomain>,
   delete(id: string, option?: BaseQueryOption): Promise<boolean>,
-  countPrice(filter: DashboardFilter, dateRange?: DateRange): Promise<string>,
+  countPrice(filter: DashboardFilter, dateRange?: DateRange): Promise<{ totalTransactions: number, totalPrice: string }>;
   countPricePrevious(filter: DashboardFilter, dateRange?: DateRange): Promise<string>,
 }

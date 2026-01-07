@@ -18,7 +18,7 @@ export const DateFormat = "YYYY-MM-DD";
 
 //
 
-export type TotalProfitLossParams = {
+export type BasicDashboardParams = {
   filter: DashboardFilter;
   from?: string;
   to?: string; 
@@ -39,4 +39,10 @@ type StockAssetItem = {
 
 export type TotalStockAssetsResponse = {
   totalStockAssets: StockAssetItem[];
+}
+
+export type totalTransactions = {
+  totalTransactions: number;
+  totalPrice: string;
+
 }

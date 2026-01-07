@@ -2,7 +2,12 @@ import TYPES from "@/types";
 import { inject, injectable } from "inversify";
 import { DashboardTotalService } from "./dashboard-total-service";
 import { validateSchema } from "@/helpers/schema-validator";
-import { getProfitLossSchema, getStockAssetsSchema } from "./dashboard-total.validation";
+import { 
+  getBuyTransactionsSchema, 
+  getProfitLossSchema, 
+  getSellTransactionsSchema, 
+  getStockAssetsSchema 
+} from "./dashboard-total.validation";
 import { Request, Response } from "express";
 import { StandardResponse } from "@/libs/standard-response";
 import { HttpCode } from "@/exceptions/app-error";
@@ -34,6 +39,36 @@ export class DashboardTotalController {
 
     return StandardResponse.create(res).setResponse({
       message: "Dashboard total stock assets fetched successfully",
+      status: HttpCode.OK,
+      data,
+    }).send();
+  }
+
+  public getBuyTransactions = async (req: Request, res: Response): Promise<Response> => {
+    const validatedReq = validateSchema(getBuyTransactionsSchema, req.query);
+    const data = await this._service.totalBuyTransactions({
+      filter: validatedReq.filter,
+      from: validatedReq.from,
+      to: validatedReq.to,
+    });
+
+    return StandardResponse.create(res).setResponse({
+      message: "Dashboard total buy transactions fetched successfully",
+      status: HttpCode.OK,
+      data,
+    }).send();
+  }
+
+  public getSellTransactions = async (req: Request, res: Response): Promise<Response> => {
+    const validatedReq = validateSchema(getSellTransactionsSchema, req.query);
+    const data = await this._service.totalSellTransactions({
+      filter: validatedReq.filter,
+      from: validatedReq.from,
+      to: validatedReq.to,
+    });
+
+    return StandardResponse.create(res).setResponse({
+      message: "Dashboard total sell transactions fetched successfully",
       status: HttpCode.OK,
       data,
     }).send();
