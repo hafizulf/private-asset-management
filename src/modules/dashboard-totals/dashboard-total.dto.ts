@@ -30,3 +30,13 @@ export type TotalProfitLossResponse = {
     trend: string;
   },
 }
+
+type StockAssetItem = {
+  commodityId: string;
+  commodityName: string;
+  qty: string;
+}
+
+export type TotalStockAssetsResponse = {
+  totalStockAssets: StockAssetItem[];
+}

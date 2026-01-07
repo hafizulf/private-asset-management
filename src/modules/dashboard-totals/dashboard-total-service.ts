@@ -4,9 +4,17 @@ import { IDashboardTotalRepository } from "./dashboard-total-repository-interfac
 import { IDashboardTotal } from "./dashboard-total-domain";
 import { IUserRepository } from "../users/user-repository-interface";
 import { AppError, HttpCode } from "@/exceptions/app-error";
-import { DateFormat, DateRange, ENUM_FILTER_DASHBOARD, TotalProfitLossParams, TotalProfitLossResponse } from "./dashboard-total.dto";
+import { 
+  DateFormat, 
+  DateRange, 
+  ENUM_FILTER_DASHBOARD,
+  TotalProfitLossParams, 
+  TotalProfitLossResponse,
+  TotalStockAssetsResponse,
+} from "./dashboard-total.dto";
 import { IBuyHistoryRepository } from "../buy-history/buy-history-repository-interface";
 import { ISellHistoryRepository } from "../sell-history/sell-history-repository-interface";
+import { IStockAssetRepository } from "../stock-assets/stock-asset-repository-interface";
 import { toDecimal } from "@/helpers/math.helper";
 import Decimal from "decimal.js";
 import dayjs from "dayjs";
@@ -19,6 +27,7 @@ export class DashboardTotalService {
     @inject(TYPES.IUserRepository) private _userRepository: IUserRepository,
     @inject(TYPES.IBuyHistoryRepository) private _buyHistoryRepository: IBuyHistoryRepository,
     @inject(TYPES.ISellHistoryRepository) private _sellHistoryRepository: ISellHistoryRepository,
+    @inject(TYPES.IStockAssetRepository) private _stockAssetRepository: IStockAssetRepository,
     )
   {}
 
@@ -103,7 +112,23 @@ export class DashboardTotalService {
   }
 
   /**
-   * 2. Total Assets filter by Commodity [day, month, year]
+   * 2. Total Stock Assets filter by [commodity id or all]
+  */
+  async totalStockAssets(commodityId?: string): Promise<TotalStockAssetsResponse> {
+    const rows = commodityId
+      ? [await this._stockAssetRepository.findByCommodityId(commodityId)]
+      : await this._stockAssetRepository.findAll();
+
+    const totalStockAssets = rows.map((el) => ({
+      commodityId: el.commodityId,
+      commodityName: el.commodity!.name,
+      qty: el.qty,
+    }));
+
+    return { totalStockAssets };
+  }
+
+  /**
    * 3. Total Buy Transactions [day, month, year]
    * 4. Total Sell Transactions [day, month, year]
    * 5. Buy vs sell over time (daily/weekly)
