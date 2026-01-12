@@ -11,9 +11,11 @@ import { BaseQueryOption } from "../common/dto/common-dto";
 import { ISellHistory, SellHistoryDomain } from "./sell-history-domain";
 import { ISellHistoryRepository } from "./sell-history-repository-interface";
 import { SellHistoryErrMessage } from "@/exceptions/error-message-constants";
-import { DashboardFilter, DateFormat, DateRange, ENUM_FILTER_DASHBOARD } from "../dashboard-totals/dashboard-total.dto";
+import { DashboardFilter, DashboardGranularity, DashboardMetric, DateFormat, DateRange, ENUM_FILTER_DASHBOARD, TimeUnit } from "../dashboard-totals/dashboard-total.dto";
 import { sequelize } from "@/config/database";
 import dayjs from "dayjs";
+import Decimal from "decimal.js";
+import { toDecimal } from "@/helpers/math.helper";
 
 @injectable()
 export class SellHistoryRepository implements ISellHistoryRepository {
@@ -139,7 +141,6 @@ export class SellHistoryRepository implements ISellHistoryRepository {
     filter: DashboardFilter, 
     dateRange: DateRange
   ): Promise<{ totalTransactions: number, totalPrice: string }> => {
-    type TimeUnit = "day" | "month" | "year";
     const unitByFilter: Partial<Record<DashboardFilter, TimeUnit>> = {
       [ENUM_FILTER_DASHBOARD.DAY]: "day",
       [ENUM_FILTER_DASHBOARD.MONTH]: "month",
@@ -187,7 +188,6 @@ export class SellHistoryRepository implements ISellHistoryRepository {
   };
 
   countPricePrevious = async (filter: DashboardFilter, dateRange: DateRange): Promise<string> => {
-    type TimeUnit = "day" | "month" | "year";
     const unitByFilter: Partial<Record<DashboardFilter, TimeUnit>> = {
       [ENUM_FILTER_DASHBOARD.DAY]: "day",
       [ENUM_FILTER_DASHBOARD.MONTH]: "month",
@@ -235,4 +235,76 @@ export class SellHistoryRepository implements ISellHistoryRepository {
 
     return row.total;
   };
+
+  async findMinMaxDate(): Promise<{ minDate?: string; maxDate?: string }> {
+    const rows = await sequelize.query<{ min_date: string | null; max_date: string | null }>(
+      `
+      SELECT
+        MIN("date")::text AS min_date,
+        MAX("date")::text AS max_date
+      FROM "sell_histories"
+      WHERE "deleted_at" IS NULL
+      `,
+      { type: QueryTypes.SELECT }
+    );
+
+    const r = rows[0];
+    return {
+      minDate: r?.min_date ?? undefined,
+      maxDate: r?.max_date ?? undefined,
+    };
+  }
+
+  async findBucketedSeries(
+    from: string | undefined,
+    to: string | undefined,
+    granularity: DashboardGranularity,
+    metric: DashboardMetric
+  ): Promise<Record<string, Decimal>> {
+    const whereDate =
+      from && to
+        ? `
+          AND "date" >= :from
+          AND "date" <= :to
+        `
+        : '';
+
+    const replacements: Record<string, string> = {};
+    if (from && to) {
+      replacements.from = from;
+      replacements.to = to;
+    }
+
+    const bucketExpr =
+      granularity === 'day'
+        ? `("date")::date`
+        : granularity === 'week'
+          ? `(date_trunc('week', (("date")::timestamp + interval '1 day')) - interval '1 day')::date`
+          : `date_trunc('month', ("date")::timestamp)::date`;
+
+    const valueExpr = metric === 'qty' ? `"qty"` : `"total_price"`;
+
+    const rows = await sequelize.query<{ bucket: string; value: string }>(
+      `
+      SELECT
+        (${bucketExpr})::text AS bucket,
+        COALESCE(SUM(${valueExpr}), 0)::text AS value
+      FROM "sell_histories"
+      WHERE "deleted_at" IS NULL
+        ${whereDate}
+      GROUP BY 1
+      ORDER BY 1 ASC
+      `,
+      {
+        replacements,
+        type: QueryTypes.SELECT,
+      }
+    );
+
+    const out: Record<string, Decimal> = {};
+    for (const r of rows) {
+      out[r.bucket] = toDecimal(r.value);
+    }
+    return out;
+  }
 }

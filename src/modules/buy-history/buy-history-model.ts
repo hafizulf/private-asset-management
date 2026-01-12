@@ -62,5 +62,11 @@ BuyHistory.init({
   tableName: 'buy_histories',
   modelName: 'buyHistory',
   underscored: true,
-  paranoid: true
+  paranoid: true,
+  indexes: [
+    {
+      name: 'idx_buy_histories_date_commodity_id',
+      fields: ['date', 'commodity_id'],
+    },
+  ],
 })

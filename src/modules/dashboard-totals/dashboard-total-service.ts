@@ -6,12 +6,19 @@ import { IUserRepository } from "../users/user-repository-interface";
 import { AppError, HttpCode } from "@/exceptions/app-error";
 import { 
   BasicDashboardParams,
-  DateFormat, 
+  BuySellSeriesPoint,
+  BuySellSeriesResponse,
+  DashboardFilter,
+  DashboardGranularity,
+  DashboardMetric,
+  DateFormat,
+  BuySellSeriesDateFormat, 
   DateRange, 
   ENUM_FILTER_DASHBOARD,
   TotalProfitLossResponse,
   TotalStockAssetsResponse,
   totalTransactions,
+  Window,
 } from "./dashboard-total.dto";
 import { IBuyHistoryRepository } from "../buy-history/buy-history-repository-interface";
 import { ISellHistoryRepository } from "../sell-history/sell-history-repository-interface";
@@ -163,7 +170,170 @@ export class DashboardTotalService {
 
   /**
    * 5. Buy vs sell over time (daily/weekly)
+  */
+  async totalBuySellSeries(
+    params: BasicDashboardParams,
+    granularity: DashboardGranularity,
+    metric: DashboardMetric
+  ): Promise<BuySellSeriesResponse> {
+    const { filter, from, to } = params;
+
+    const window =
+      filter === ENUM_FILTER_DASHBOARD.ALL
+        ? undefined
+        : this.resolveWindow(filter, from, to);
+
+    const [buyMinMax, sellMinMax] = await Promise.all([
+      this._buyHistoryRepository.findMinMaxDate(),
+      this._sellHistoryRepository.findMinMaxDate(),
+    ]);
+
+    const effectiveWindow: Window =
+      filter === ENUM_FILTER_DASHBOARD.ALL
+        ? (() => {
+            const dates = [
+              buyMinMax.minDate,
+              buyMinMax.maxDate,
+              sellMinMax.minDate,
+              sellMinMax.maxDate,
+            ]
+              .filter(Boolean)
+              .sort();
+
+            const first = dates.at(0);
+            const last = dates.at(-1);
+
+            if (!first || !last) {
+              const today = dayjs().format(DateFormat);
+              return { from: today, to: today };
+            }
+
+            return { from: first, to: last };
+          })()
+        : (window as Window);
+
+    const [buyAgg, sellAgg] = await Promise.all([
+      this._buyHistoryRepository.findBucketedSeries(
+        window?.from,
+        window?.to,
+        granularity,
+        metric
+      ),
+      this._sellHistoryRepository.findBucketedSeries(
+        window?.from,
+        window?.to,
+        granularity,
+        metric
+      ),
+    ]);
+
+    const buckets = this.buildBuckets(effectiveWindow.from, effectiveWindow.to, granularity);
+
+    let totalBuy = new Decimal(0);
+    let totalSell = new Decimal(0);
+
+    const series: BuySellSeriesPoint[] = buckets.map((b) => {
+      const buy = buyAgg[b] ?? new Decimal(0);
+      const sell = sellAgg[b] ?? new Decimal(0);
+
+      totalBuy = totalBuy.plus(buy);
+      totalSell = totalSell.plus(sell);
+
+      return {
+        bucket: dayjs(b).format(BuySellSeriesDateFormat),
+        buy: buy.toFixed(2),
+        sell: sell.toFixed(2),
+      };
+    });
+
+    return {
+      meta: {
+        filter,
+        from: effectiveWindow.from,
+        to: effectiveWindow.to,
+        granularity,
+        metric,
+      },
+      series,
+      totals: {
+        buy: totalBuy.toFixed(2),
+        sell: totalSell.toFixed(2),
+      },
+    };
+  }
+
+  private resolveWindow(filter: DashboardFilter, from?: string, to?: string): Window {
+    if (filter === ENUM_FILTER_DASHBOARD.DATE_RANGE) {
+      return { from: from!, to: to! };
+    }
+
+    const now = dayjs();
+
+    if (filter === ENUM_FILTER_DASHBOARD.DAY) {
+      const d = now.format(DateFormat);
+      return { from: d, to: d };
+    }
+
+    if (filter === ENUM_FILTER_DASHBOARD.MONTH) {
+      return {
+        from: now.startOf("month").format(DateFormat),
+        to: now.endOf("month").format(DateFormat),
+      };
+    }
+
+    if (filter === ENUM_FILTER_DASHBOARD.YEAR) {
+      return {
+        from: now.startOf("year").format(DateFormat),
+        to: now.endOf("year").format(DateFormat),
+      };
+    }
+
+    const today = now.format(DateFormat);
+    return { from: today, to: today };
+  }
+
+  private buildBuckets(from: string, to: string, granularity: DashboardGranularity): string[] {
+    const start = dayjs(from);
+    const end = dayjs(to);
+
+    if (granularity === "day") {
+      const out: string[] = [];
+      let cur = start;
+      while (cur.isBefore(end) || cur.isSame(end, "day")) {
+        out.push(cur.format(DateFormat));
+        cur = cur.add(1, "day");
+      }
+      return out;
+    }
+
+    if (granularity === "week") {
+      const out: string[] = [];
+      let cur = start.startOf("week");
+      const endW = end.startOf("week");
+      while (cur.isBefore(endW) || cur.isSame(endW, "week")) {
+        out.push(cur.format(DateFormat));
+        cur = cur.add(1, "week");
+      }
+      return out;
+    }
+
+    const out: string[] = [];
+    let cur = start.startOf("month");
+    const endM = end.startOf("month");
+    while (cur.isBefore(endM) || cur.isSame(endM, "month")) {
+      out.push(cur.format(DateFormat));
+      cur = cur.add(1, "month");
+    }
+    return out;
+  }
+
+  /**
    * 6. Top 5 commodities by volume/value
+   */
+  
+
+
+  /**
    * 7. Last 10 buys/sells with date, commodity, qty, total
    */
 }

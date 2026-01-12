@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ENUM_FILTER_DASHBOARD } from "./dashboard-total.dto";
+import { ENUM_FILTER_DASHBOARD, ENUM_GRANULARITY, ENUM_METRIC } from "./dashboard-total.dto";
 import { indoDateToIso } from "../common/validation/date-schema";
 import { singleUUIDSchema } from "../common/validation/uuid-schema";
 
@@ -36,3 +36,23 @@ export const getStockAssetsSchema = z.object({
 export const getBuyTransactionsSchema = basicDashboardSchema;
 
 export const getSellTransactionsSchema = basicDashboardSchema;
+
+export const getBuySellSeriesSchema = basicDashboardSchema
+  .and(
+    z.object({
+      granularity: z.nativeEnum(ENUM_GRANULARITY),
+      metric: z.nativeEnum(ENUM_METRIC),
+    })
+  )
+  .superRefine((val, ctx) => {
+    if (
+      val.filter === ENUM_FILTER_DASHBOARD.DAY &&
+      val.granularity !== ENUM_GRANULARITY.DAY
+    ) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['granularity'],
+        message: '`granularity` harus day saat filter = day',
+      });
+    }
+  });

@@ -3,6 +3,7 @@ import { inject, injectable } from "inversify";
 import { DashboardTotalService } from "./dashboard-total-service";
 import { validateSchema } from "@/helpers/schema-validator";
 import { 
+  getBuySellSeriesSchema,
   getBuyTransactionsSchema, 
   getProfitLossSchema, 
   getSellTransactionsSchema, 
@@ -69,6 +70,21 @@ export class DashboardTotalController {
 
     return StandardResponse.create(res).setResponse({
       message: "Dashboard total sell transactions fetched successfully",
+      status: HttpCode.OK,
+      data,
+    }).send();
+  }
+
+  public getBuySellSeries = async (req: Request, res: Response): Promise<Response> => {
+    const validatedReq = validateSchema(getBuySellSeriesSchema, req.query);
+    const data = await this._service.totalBuySellSeries(
+      { filter: validatedReq.filter, from: validatedReq.from, to: validatedReq.to },
+      validatedReq.granularity,
+      validatedReq.metric,
+    );
+
+    return StandardResponse.create(res).setResponse({
+      message: "Dashboard buy and sell series fetched successfully",
       status: HttpCode.OK,
       data,
     }).send();

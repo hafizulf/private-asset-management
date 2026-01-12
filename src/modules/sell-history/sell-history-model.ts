@@ -62,5 +62,11 @@ SellHistory.init({
   tableName: "sell_histories",
   modelName: "sellHistory",
   underscored: true,
-  paranoid: true
+  paranoid: true,
+  indexes: [
+    {
+      name: 'idx_sell_histories_date_commodity_id',
+      fields: ['date', 'commodity_id'],
+    },
+  ]
 })
