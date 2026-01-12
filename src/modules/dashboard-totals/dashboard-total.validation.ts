@@ -56,3 +56,11 @@ export const getBuySellSeriesSchema = basicDashboardSchema
       });
     }
   });
+
+export const getTopCommoditiesSchema = basicDashboardSchema
+  .and(
+    z.object({
+      metric: z.nativeEnum(ENUM_METRIC),
+      limit: z.coerce.number().min(1).optional(),
+    })
+  );

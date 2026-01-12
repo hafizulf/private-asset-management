@@ -19,6 +19,7 @@ import {
   TotalStockAssetsResponse,
   totalTransactions,
   Window,
+  TopCommoditiesResponse,
 } from "./dashboard-total.dto";
 import { IBuyHistoryRepository } from "../buy-history/buy-history-repository-interface";
 import { ISellHistoryRepository } from "../sell-history/sell-history-repository-interface";
@@ -330,7 +331,45 @@ export class DashboardTotalService {
   /**
    * 6. Top 5 commodities by volume/value
    */
-  
+  async totalTopCommodities(
+    params: BasicDashboardParams,
+    metric: DashboardMetric,
+    limit: number = 5,
+  ): Promise<TopCommoditiesResponse> {
+    const { filter, from, to } = params;
+
+    const window =
+      filter === ENUM_FILTER_DASHBOARD.ALL
+        ? undefined
+        : this.resolveWindow(filter, from, to);
+
+    const rows = await this._repository.findTopCommodities(
+      window?.from,
+      window?.to,
+      metric,
+      limit,
+    );
+
+    return {
+      meta: {
+        filter,
+        from: window?.from,
+        to: window?.to,
+        metric,
+        limit: 5,
+      },
+      items: rows.map((r) => ({
+        commodityId: r.commodityId,
+        commodityName: r.commodityName,
+        buyQty: r.buyQty,
+        buyValue: r.buyValue,
+        sellQty: r.sellQty,
+        sellValue: r.sellValue,
+        totalQty: r.totalQty,
+        totalValue: r.totalValue,
+      })),
+    };
+  }
 
 
   /**

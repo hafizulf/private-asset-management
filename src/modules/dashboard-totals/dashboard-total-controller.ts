@@ -7,7 +7,8 @@ import {
   getBuyTransactionsSchema, 
   getProfitLossSchema, 
   getSellTransactionsSchema, 
-  getStockAssetsSchema 
+  getStockAssetsSchema, 
+  getTopCommoditiesSchema,
 } from "./dashboard-total.validation";
 import { Request, Response } from "express";
 import { StandardResponse } from "@/libs/standard-response";
@@ -85,6 +86,21 @@ export class DashboardTotalController {
 
     return StandardResponse.create(res).setResponse({
       message: "Dashboard buy and sell series fetched successfully",
+      status: HttpCode.OK,
+      data,
+    }).send();
+  }
+
+  public getTopCommodities = async (req: Request, res: Response): Promise<Response> => {
+    const validatedReq = validateSchema(getTopCommoditiesSchema, req.query);
+    const data = await this._service.totalTopCommodities(
+      { filter: validatedReq.filter, from: validatedReq.from, to: validatedReq.to },
+      validatedReq.metric,
+      validatedReq.limit,
+    );
+
+    return StandardResponse.create(res).setResponse({
+      message: "Dashboard top commodities fetched successfully",
       status: HttpCode.OK,
       data,
     }).send();

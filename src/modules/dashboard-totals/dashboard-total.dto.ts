@@ -97,3 +97,25 @@ export type Window = {
   from: string; 
   to: string
 }
+
+export type TopCommodityRow = {
+  commodityId: string;
+  commodityName: string;
+  buyQty: string;
+  buyValue: string;
+  sellQty: string;
+  sellValue: string;
+  totalQty: string;
+  totalValue: string;
+}
+
+export type TopCommoditiesResponse = {
+  meta: {
+    filter: DashboardFilter;
+    from?: string;
+    to?: string;
+    metric: DashboardMetric;
+    limit: number;
+  };
+  items: TopCommodityRow[];
+}
