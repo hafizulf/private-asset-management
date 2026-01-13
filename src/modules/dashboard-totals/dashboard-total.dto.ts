@@ -119,3 +119,21 @@ export type TopCommoditiesResponse = {
   };
   items: TopCommodityRow[];
 }
+
+export type RecentTransactionDbRow = {
+  date: Date;
+  commodity: string;
+  type: "BUY" | "SELL";
+  qty: string;
+  total: string;
+  createdAt: Date;
+}
+
+export type RecentTransactionRow = {
+  date: string;
+  commodity: string;
+  type: "BUY" | "SELL";
+  qty: string;
+  total: string;
+  createdAt: string;
+};

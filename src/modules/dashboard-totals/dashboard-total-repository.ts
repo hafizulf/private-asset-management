@@ -2,7 +2,7 @@ import { injectable } from "inversify";
 import { IDashboardTotalRepository } from "./dashboard-total-repository-interface";
 import { DashboardTotal as DashboardTotalPersistence } from "@/modules/common/sequelize";
 import { DashboardTotalDomain, IDashboardTotal } from "./dashboard-total-domain";
-import { DashboardMetric, TopCommodityRow } from "./dashboard-total.dto";
+import { DashboardMetric, RecentTransactionDbRow, TopCommodityRow } from "./dashboard-total.dto";
 import { sequelize } from "@/config/database";
 import { QueryTypes } from "sequelize";
 
@@ -102,6 +102,43 @@ export class DashboardTotalRepository implements IDashboardTotalRepository {
       {
         replacements,
         type: QueryTypes.SELECT,
+      }
+    );
+
+    return rows;
+  }
+
+  async getRecentTransactions(limit = 10): Promise<RecentTransactionDbRow[]> {
+    const rows = await sequelize.query<RecentTransactionDbRow>(
+      `
+      SELECT
+        bh.date        AS "date",
+        c.name         AS "commodity",
+        'BUY'          AS "type",
+        bh.qty         AS "qty",
+        bh.total_price AS "total",
+        bh.created_at  AS "createdAt"
+      FROM buy_histories bh
+      JOIN commodities c ON c.id = bh.commodity_id
+
+      UNION ALL
+
+      SELECT
+        sh.date        AS "date",
+        c.name         AS "commodity",
+        'SELL'         AS "type",
+        sh.qty         AS "qty",
+        sh.total_price AS "total",
+        sh.created_at  AS "createdAt"
+      FROM sell_histories sh
+      JOIN commodities c ON c.id = sh.commodity_id
+
+      ORDER BY "createdAt" DESC
+      LIMIT :limit;
+      `,
+      {
+        type: QueryTypes.SELECT,
+        replacements: { limit },
       }
     );
 

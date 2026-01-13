@@ -20,6 +20,7 @@ import {
   totalTransactions,
   Window,
   TopCommoditiesResponse,
+  RecentTransactionRow,
 } from "./dashboard-total.dto";
 import { IBuyHistoryRepository } from "../buy-history/buy-history-repository-interface";
 import { ISellHistoryRepository } from "../sell-history/sell-history-repository-interface";
@@ -27,6 +28,7 @@ import { IStockAssetRepository } from "../stock-assets/stock-asset-repository-in
 import { toDecimal } from "@/helpers/math.helper";
 import Decimal from "decimal.js";
 import dayjs from "dayjs";
+// import { Pagination } from "../common/pagination";
 
 
 @injectable()
@@ -375,4 +377,18 @@ export class DashboardTotalService {
   /**
    * 7. Last 10 buys/sells with date, commodity, qty, total
    */
+  async getRecentTransactions(): Promise<RecentTransactionRow[]> {
+    const rows = await this._repository.getRecentTransactions();
+
+    const items: RecentTransactionRow[] = rows.map((r) => ({
+      date: dayjs(r.date).format("DD MMM YY"),
+      commodity: r.commodity,
+      type: r.type,
+      qty: String(r.qty),
+      total: String(r.total),
+      createdAt: dayjs(r.createdAt).toISOString(),
+    }));
+
+    return items;
+  }
 }

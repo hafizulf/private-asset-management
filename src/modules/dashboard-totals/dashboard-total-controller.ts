@@ -105,4 +105,14 @@ export class DashboardTotalController {
       data,
     }).send();
   }
+
+  public getRecentTransactions = async (_req: Request, res: Response): Promise<Response> => {
+    const data = await this._service.getRecentTransactions();
+
+    return StandardResponse.create(res).setResponse({
+      message: "Dashboard recent transactions fetched successfully",
+      status: HttpCode.OK,
+      data,
+    }).send();
+  }
 }

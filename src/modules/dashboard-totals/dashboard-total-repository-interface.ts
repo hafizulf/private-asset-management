@@ -1,5 +1,5 @@
 import { DashboardTotalDomain, IDashboardTotal } from "./dashboard-total-domain";
-import { DashboardMetric, TopCommodityRow } from "./dashboard-total.dto";
+import { DashboardMetric, RecentTransactionDbRow, TopCommodityRow } from "./dashboard-total.dto";
 
 export interface IDashboardTotalRepository {
   findAll(): Promise<DashboardTotalDomain[]>
@@ -10,4 +10,5 @@ export interface IDashboardTotalRepository {
     metric: DashboardMetric,
     limit: number,
   ): Promise<TopCommodityRow[]>
+  getRecentTransactions(): Promise<RecentTransactionDbRow[]>
 }
