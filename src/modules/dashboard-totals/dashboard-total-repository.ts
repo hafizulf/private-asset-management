@@ -120,6 +120,7 @@ export class DashboardTotalRepository implements IDashboardTotalRepository {
         bh.created_at  AS "createdAt"
       FROM buy_histories bh
       JOIN commodities c ON c.id = bh.commodity_id
+      WHERE bh.deleted_at IS NULL
 
       UNION ALL
 
@@ -132,6 +133,7 @@ export class DashboardTotalRepository implements IDashboardTotalRepository {
         sh.created_at  AS "createdAt"
       FROM sell_histories sh
       JOIN commodities c ON c.id = sh.commodity_id
+      WHERE sh.deleted_at IS NULL
 
       ORDER BY "createdAt" DESC
       LIMIT :limit;
